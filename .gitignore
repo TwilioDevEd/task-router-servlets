@@ -1,0 +1,12 @@
+.DS_Store
+.idea/
+.gradle/
+build/
+target/
+*.iml
+*.ipr
+*.iws
+*.sqlite
+*.env
+out/
+/.nb-gradle/
