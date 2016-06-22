@@ -28,7 +28,7 @@ import java.util.Optional;
  * Twilio settings and functions for this app
  */
 @Singleton
-public final class TwilioAppSettings {
+public class TwilioAppSettings {
 
   public static final String DIGITS_PARAM = "Digits";
 

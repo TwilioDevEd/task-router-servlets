@@ -39,7 +39,7 @@ public final class WorkspaceProxy {
   }
 
   public static WorkspaceProxy createWorkspaceProxy(TwilioTaskRouterClient twilioTaskRouterClient,
-                                                     Map<String, String> params) {
+                                                    Map<String, String> params) {
     String workspaceName = params.get("FriendlyName");
     StreamSupport.stream(twilioTaskRouterClient.getWorkspaces().spliterator(), false)
       .filter(workspace -> workspace.getFriendlyName().equals(workspaceName)).findFirst()
