@@ -26,7 +26,7 @@ class CreateWorkspaceTask {
   private static final Logger LOG = Logger.getLogger(CreateWorkspaceTask.class.getName());
 
   public static void main(String[] args) {
-    System.out.println("Creating workspace");
+    System.out.println("Creating workspace...");
     if (args.length < 3) {
       System.out.println("You must specify 3 parameters:");
       System.out.println("- Server hostname. E.g, <hash>.ngrok.com");
@@ -37,7 +37,7 @@ class CreateWorkspaceTask {
     String hostname = args[0];
     String bobPhone = args[1];
     String alicePhone = args[2];
-    LOG.fine(String.format("-server: %s\n-Bob phone: %s\n-Alice phone: %s",
+    System.out.println(String.format("server: %s\nBob phone: %s\nAlice phone: %s\n",
       hostname, bobPhone, alicePhone));
     Injector injector = Guice.createInjector();
     final TwilioAppSettings twilioSettings = injector.getInstance(TwilioAppSettings.class);
@@ -54,7 +54,7 @@ class CreateWorkspaceTask {
       Activity idleActivity = workspaceProxy.findActivityByName("Idle").orElseThrow(() ->
         new TaskRouterException("The activity 'Idle' was not found to be set for Timeout."));
       params.clear();
-      params.put("TimeoutActivityName", idleActivity.getSid());
+      params.put("TimeoutActivitySid", idleActivity.getSid());
       workspaceProxy.update(params);
       addWorkersToWorkspace(workspaceProxy, workspaceConfig);
       addTaskQueuesToWorkspace(workspaceProxy, workspaceConfig);
@@ -129,7 +129,7 @@ class CreateWorkspaceTask {
     Activity idleActivity = workspaceProxy.findActivityByName("Idle")
       .orElseThrow(() -> new TaskRouterException("The IDLE activity does not exist."));
     StringBuilder exportVarsCmdStrBuilder = new StringBuilder(String.format(
-      "export WORKFLOW_SID=%s\n", workflow.getSid()));
+      "\nexport WORKFLOW_SID=%s\n", workflow.getSid()));
     exportVarsCmdStrBuilder.append(String.format("export POST_WORK_ACTIVITY_SID=%s\n",
       idleActivity.getSid()));
     String successMsg = String.format("Workspace '%s' was created successfully.",
@@ -138,9 +138,14 @@ class CreateWorkspaceTask {
     System.out.println(StringUtils.repeat("#", lineLength));
     System.out.println(String.format(" %s ", successMsg));
     System.out.println(StringUtils.repeat("#", lineLength));
-    Utils.copyTextToClipboad(exportVarsCmdStrBuilder.toString());
     System.out.println("You have to set the following environment vars:");
     System.out.println(exportVarsCmdStrBuilder.toString());
+    try {
+      Utils.copyTextToClipboad(exportVarsCmdStrBuilder.toString());
+      System.out.println("(Copied to your clipboard)");
+    } catch (Throwable err) {
+      LOG.fine("Could not copy commands to export variables into the clipboard");
+    }
     System.out.println(StringUtils.repeat("#", lineLength));
   }
 }

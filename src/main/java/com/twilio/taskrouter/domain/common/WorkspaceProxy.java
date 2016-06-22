@@ -66,6 +66,7 @@ public final class WorkspaceProxy {
 
   public Worker addWorker(Map<String, String> parameters) {
     try {
+
       return workspace.createWorker(parameters);
     } catch (TwilioRestException e) {
       throw new TaskRouterException(String.format(

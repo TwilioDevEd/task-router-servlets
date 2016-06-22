@@ -35,7 +35,6 @@ public class EventsServlet extends HttpServlet {
                        final MissedCallRepository missedCallRepository) {
     this.twilioSettings = twilioSettings;
     this.missedCallRepository = missedCallRepository;
-
   }
 
   @Override

@@ -37,13 +37,15 @@ public class TwilioAppSettings {
   public static final String TASK_ATTRIBUTES_PARAM = "TaskAttributes";
 
   public static final List<String> DESIRABLE_EVENTS =
-    Arrays.asList("workflow.timeout", "task.canceled");
+    Arrays.asList("workflow.timeout", "task.canceled", "");
 
   private final TwilioRestClient twilioRestClient;
 
   private final TwilioTaskRouterClient twilioTaskRouterClient;
 
   private String workFlowSID;
+
+  private String postWorkActivitySID;
 
   private String dequeuInstruction;
 
@@ -66,11 +68,19 @@ public class TwilioAppSettings {
     return workFlowSID;
   }
 
+  public String getPostWorkActivitySID() {
+    if (postWorkActivitySID == null) {
+      this.postWorkActivitySID = Optional.ofNullable(System.getenv("POST_WORK_ACTIVITY_SID")).orElseThrow(
+        () -> new TaskRouterException("POST_WORK_ACTIVITY_SID is not set in the environment"));
+    }
+    return postWorkActivitySID;
+  }
+
   public String getDequeuInstruction() {
     if (dequeuInstruction == null) {
       dequeuInstruction = Json.createObjectBuilder()
         .add("instruction", "dequeue")
-        .add("post_work_activity_sid", getWorkFlowSID())
+        .add("post_work_activity_sid", getPostWorkActivitySID())
         .build().toString();
     }
     return dequeuInstruction;
