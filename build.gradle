@@ -47,9 +47,11 @@ task wrapper(type: Wrapper) {
 gretty.contextPath = ''
 
 //Task create_workspace
-task create_workspace(type: JavaExec) << {
-  description = "Creates a workspace in Twilio for routing calls to a call center of 2 agents"
-  main = 'com.twilio.taskrouter.application.CreateWorkspaceTask'
-  classpath = sourceSets.main.runtimeClasspath
-  args config.split(" ")
+task createWorkspace << {
+  javaexec {
+    description = "Creates a workspace in Twilio for routing calls to a call center of 2 agents"
+    main = 'com.twilio.taskrouter.application.CreateWorkspaceTask'
+    classpath = sourceSets.main.runtimeClasspath
+    args config.split(" ")
+  }
 }

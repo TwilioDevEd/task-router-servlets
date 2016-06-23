@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Twilio settings and functions for this app
+ * Twilio settings and helper functions for this app
  */
 @Singleton
 public class TwilioAppSettings {
@@ -70,8 +70,9 @@ public class TwilioAppSettings {
 
   public String getPostWorkActivitySID() {
     if (postWorkActivitySID == null) {
-      this.postWorkActivitySID = Optional.ofNullable(System.getenv("POST_WORK_ACTIVITY_SID")).orElseThrow(
-        () -> new TaskRouterException("POST_WORK_ACTIVITY_SID is not set in the environment"));
+      this.postWorkActivitySID = Optional.ofNullable(System.getenv("POST_WORK_ACTIVITY_SID"))
+        .orElseThrow(() ->
+          new TaskRouterException("POST_WORK_ACTIVITY_SID is not set in the environment"));
     }
     return postWorkActivitySID;
   }
