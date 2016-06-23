@@ -14,6 +14,7 @@ import java.util.Optional;
 
 
 public class UtilsTest {
+
   private static URI getResourceURI(String filePath) {
     Optional<URL> url =
       Optional.ofNullable(UtilsTest.class.getResource(File.separator + filePath));
@@ -43,6 +44,14 @@ public class UtilsTest {
     Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
     String result = (String) clipboard.getData(DataFlavor.stringFlavor);
     Assert.assertEquals(content, result);
+  }
+
+  @Test
+  public void formatPhoneNumberToUSInternational() throws Exception {
+    Assert.assertEquals("The international format for the numbers is not the expected",
+      "+1 415-723-4000",
+      Utils.formatPhoneNumberToUSInternational("+14157234000")
+    );
   }
 
 }

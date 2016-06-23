@@ -1,14 +1,12 @@
 package com.twilio.taskrouter.domain.model;
 
-import com.google.i18n.phonenumbers.NumberParseException;
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
-import com.google.i18n.phonenumbers.Phonenumber;
-import com.twilio.taskrouter.domain.error.TaskRouterException;
+import com.twilio.taskrouter.domain.common.Utils;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.Size;
 import java.util.Date;
@@ -17,6 +15,7 @@ import java.util.Date;
  * A missed call from a customer, lets call them back!
  */
 @Entity
+@Table(name = "missed_calls")
 public final class MissedCall {
 
   @Id
@@ -78,20 +77,14 @@ public final class MissedCall {
 
   public String getInternationalPhoneNumber() {
     if (internationalPhoneNumber == null) {
-      PhoneNumberUtil phoneUtil = PhoneNumberUtil.getInstance();
-      try {
-        Phonenumber.PhoneNumber usPhoneNumber = phoneUtil.parse(phoneNumber, "US");
-        internationalPhoneNumber = phoneUtil.format(usPhoneNumber,
-          PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL);
-      } catch (NumberParseException e) {
-        throw new TaskRouterException("Invalid phone format: " + e.toString());
-      }
+      internationalPhoneNumber = Utils.formatPhoneNumberToUSInternational(phoneNumber);
     }
     return internationalPhoneNumber;
   }
 
   @Override
   public String toString() {
-    return selectedProduct;
+    return String.format("{ \"selected_product\": \"%s\", \"phone_number\": \"%s\" }",
+      selectedProduct, phoneNumber);
   }
 }

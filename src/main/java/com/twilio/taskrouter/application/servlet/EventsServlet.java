@@ -1,5 +1,6 @@
 package com.twilio.taskrouter.application.servlet;
 
+import com.google.inject.persist.Transactional;
 import com.twilio.sdk.TwilioRestException;
 import com.twilio.taskrouter.domain.common.TwilioAppSettings;
 import com.twilio.taskrouter.domain.model.MissedCall;
@@ -38,25 +39,27 @@ public class EventsServlet extends HttpServlet {
   }
 
   @Override
+  @Transactional
   public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
     IOException {
     Optional.ofNullable(req.getParameter(TwilioAppSettings.EVENT_TYPE_PARAM))
-      .filter(eventType -> TwilioAppSettings.DESIRABLE_EVENTS.contains(eventType))
-      .ifPresent(eventType -> {
-        getTaskAttributes(req)
-          .ifPresent(jsonObject -> {
-            String phoneNumber = jsonObject.getString("from");
-            String selectedProduct = jsonObject.getString("selected_product");
-            missedCallRepository.add(new MissedCall(phoneNumber, selectedProduct));
-            String callSid = jsonObject.getString("call_sid");
-            try {
-              twilioSettings.hangUpCall(callSid);
-            } catch (TwilioRestException e) {
-              LOG.warning(String.format("Error while hanging the call '%s': %s",
-                callSid, e.getMessage()));
-            }
-          });
-      });
+      .filter(TwilioAppSettings.DESIRABLE_EVENTS::contains)
+      .flatMap(eventType -> getTaskAttributes(req)).ifPresent(this::addMissingCallAndHangUp);
+  }
+
+  public void addMissingCallAndHangUp(JsonObject taskAttributesJson) {
+    String phoneNumber = taskAttributesJson.getString("from");
+    String selectedProduct = taskAttributesJson.getString("selected_product");
+    MissedCall missedCall = new MissedCall(phoneNumber, selectedProduct);
+    missedCallRepository.add(missedCall);
+    LOG.info("Added Missing Call: " + missedCall);
+    String callSid = taskAttributesJson.getString("call_sid");
+    try {
+      twilioSettings.hangUpCall(callSid);
+    } catch (TwilioRestException e) {
+      LOG.warning(String.format("Error while hanging the call '%s': %s",
+        callSid, e.getMessage()));
+    }
   }
 
   public Optional<JsonObject> getTaskAttributes(HttpServletRequest request) {

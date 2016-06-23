@@ -4,7 +4,7 @@ import com.twilio.sdk.TwilioRestClient;
 import com.twilio.sdk.TwilioRestException;
 import com.twilio.sdk.TwilioTaskRouterClient;
 import com.twilio.sdk.resource.instance.Call;
-import com.twilio.sdk.resource.instance.taskrouter.Workspace;
+import com.twilio.sdk.resource.instance.IncomingPhoneNumber;
 import com.twilio.taskrouter.domain.error.TaskRouterException;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.http.message.BasicNameValuePair;
@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Twilio settings and helper functions for this app
@@ -37,7 +38,7 @@ public class TwilioAppSettings {
   public static final String TASK_ATTRIBUTES_PARAM = "TaskAttributes";
 
   public static final List<String> DESIRABLE_EVENTS =
-    Arrays.asList("workflow.timeout", "task.canceled", "");
+    Arrays.asList("workflow.timeout", "task.canceled", "reservation.canceled");
 
   private final TwilioRestClient twilioRestClient;
 
@@ -49,7 +50,7 @@ public class TwilioAppSettings {
 
   private String dequeuInstruction;
 
-  private Workspace workspace;
+  private List<String> activePhoneNumbers;
 
   public TwilioAppSettings() {
     String twilioAccountSid = Optional.ofNullable(System.getenv("TWILIO_ACCOUNT_SID")).orElseThrow(
@@ -85,6 +86,16 @@ public class TwilioAppSettings {
         .build().toString();
     }
     return dequeuInstruction;
+  }
+
+  public List<String> getActivePhoneNumbers() {
+    if (activePhoneNumbers == null) {
+      activePhoneNumbers = twilioRestClient.getAccount()
+        .getIncomingPhoneNumbers().getPageData().stream()
+        .map(IncomingPhoneNumber::getPhoneNumber).map(Utils::formatPhoneNumberToUSInternational)
+        .collect(Collectors.toList());
+    }
+    return activePhoneNumbers;
   }
 
   public TwilioTaskRouterClient getTwilioTaskRouterClient() {

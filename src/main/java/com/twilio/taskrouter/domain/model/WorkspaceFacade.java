@@ -1,4 +1,4 @@
-package com.twilio.taskrouter.domain.common;
+package com.twilio.taskrouter.domain.model;
 
 import com.twilio.sdk.TwilioRestException;
 import com.twilio.sdk.TwilioTaskRouterClient;
@@ -15,33 +15,32 @@ import com.twilio.taskrouter.domain.error.TaskRouterException;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
-import java.util.stream.StreamSupport;
+import java.util.stream.Collectors;
 
 /**
  * Proxy for {@link com.twilio.sdk.resource.instance.taskrouter.Workspace}
  */
-public final class WorkspaceProxy {
+public final class WorkspaceFacade {
 
-  private static final Logger LOG = Logger.getLogger(WorkspaceProxy.class.getName());
+  private static final Logger LOG = Logger.getLogger(WorkspaceFacade.class.getName());
 
   private final TwilioTaskRouterClient taskRouterClient;
 
   private final Workspace workspace;
 
-  private WorkspaceProxy(TwilioTaskRouterClient taskRouterClient, Workspace workspace) {
+  private WorkspaceFacade(TwilioTaskRouterClient taskRouterClient, Workspace workspace) {
     this.taskRouterClient = taskRouterClient;
     this.workspace = workspace;
   }
 
-  public static WorkspaceProxy createWorkspaceProxy(TwilioTaskRouterClient twilioTaskRouterClient,
-                                                    Map<String, String> params) {
+  public static WorkspaceFacade create(TwilioTaskRouterClient twilioTaskRouterClient,
+                                       Map<String, String> params) {
     String workspaceName = params.get("FriendlyName");
-    StreamSupport.stream(twilioTaskRouterClient.getWorkspaces().spliterator(), false)
+    twilioTaskRouterClient.getWorkspaces().getPageData().stream()
       .filter(workspace -> workspace.getFriendlyName().equals(workspaceName)).findFirst()
       .ifPresent(workspace -> {
         try {
@@ -53,7 +52,7 @@ public final class WorkspaceProxy {
       });
     try {
       Workspace workspace = twilioTaskRouterClient.createWorkspace(params);
-      return new WorkspaceProxy(twilioTaskRouterClient, workspace);
+      return new WorkspaceFacade(twilioTaskRouterClient, workspace);
     } catch (TwilioRestException e) {
       throw new TaskRouterException(String.format("Error creating new workspace '%s': %s",
         workspaceName, e.getMessage()));
@@ -96,17 +95,17 @@ public final class WorkspaceProxy {
   }
 
   public Optional<Activity> findActivityByName(String activityName) {
-    return StreamSupport.stream(workspace.getActivities().spliterator(), false)
+    return workspace.getActivities().getPageData().stream()
       .filter(activity -> activity.getFriendlyName().equals(activityName)).findFirst();
   }
 
   public Optional<TaskQueue> findTaskQueueByName(String queueName) {
-    return StreamSupport.stream(workspace.getTaskQueues().spliterator(), false)
+    return workspace.getTaskQueues().getPageData().stream()
       .filter(task -> task.getFriendlyName().equals(queueName)).findFirst();
   }
 
   public Optional<Workflow> findWorkflowByName(String workflowName) {
-    return StreamSupport.stream(workspace.getWorkflows().spliterator(), false)
+    return workspace.getWorkflows().getPageData().stream()
       .filter(workflow -> workspace.getFriendlyName().equals(workflowName)).findFirst();
   }
 
@@ -124,17 +123,20 @@ public final class WorkspaceProxy {
       JsonArray routingConfigRules = workflowJson.getJsonArray("routingConfiguration");
       TaskQueue defaultQueue = findTaskQueueByName("Default")
         .orElseThrow(() -> new TaskRouterException("Default queue not found"));
-      WorkflowRuleTarget defaultTarget = new WorkflowRuleTarget(defaultQueue.getSid());
-      List<WorkflowRule> rules = new LinkedList<>();
-      routingConfigRules.getValuesAs(JsonObject.class).stream().forEach(ruleJson -> {
-        String ruleQueueName = ruleJson.getString("targetTaskQueue");
-        TaskQueue ruleQueue = findTaskQueueByName(ruleQueueName).orElseThrow(
-          () -> new TaskRouterException(String.format("%s queue not found", ruleQueueName)));
-        WorkflowRuleTarget ruleTarget = new WorkflowRuleTarget(ruleQueue.getSid());
-        List<WorkflowRuleTarget> ruleTargets = Arrays.asList(ruleTarget, defaultTarget);
-        rules.add(new WorkflowRule(ruleJson.getString("expression"), ruleTargets));
-      });
-      WorkflowConfiguration config = new WorkflowConfiguration(rules, defaultTarget);
+      WorkflowRuleTarget defaultRuleTarget
+        = new WorkflowRuleTarget(defaultQueue.getSid(), "1=1", 1, 30);
+      List<WorkflowRule> rules = routingConfigRules.getValuesAs(JsonObject.class).stream()
+        .map(ruleJson -> {
+          String ruleQueueName = ruleJson.getString("targetTaskQueue");
+          TaskQueue ruleQueue = findTaskQueueByName(ruleQueueName).orElseThrow(
+            () -> new TaskRouterException(String.format("%s queue not found", ruleQueueName)));
+          WorkflowRuleTarget queueRuleTarget = new WorkflowRuleTarget(ruleQueue.getSid());
+          queueRuleTarget.setPriority(5);
+          queueRuleTarget.setTimeout(30);
+          List<WorkflowRuleTarget> ruleTargets = Arrays.asList(queueRuleTarget, defaultRuleTarget);
+          return new WorkflowRule(ruleJson.getString("expression"), ruleTargets);
+        }).collect(Collectors.toList());
+      WorkflowConfiguration config = new WorkflowConfiguration(rules, defaultRuleTarget);
       return config.toJSON();
     } catch (Exception ex) {
       throw new TaskRouterException("Error while creating workflow json configuration: "

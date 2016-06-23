@@ -6,7 +6,7 @@ import com.twilio.sdk.resource.instance.taskrouter.Activity;
 import com.twilio.sdk.resource.instance.taskrouter.Workflow;
 import com.twilio.taskrouter.domain.common.TwilioAppSettings;
 import com.twilio.taskrouter.domain.common.Utils;
-import com.twilio.taskrouter.domain.common.WorkspaceProxy;
+import com.twilio.taskrouter.domain.model.WorkspaceFacade;
 import com.twilio.taskrouter.domain.error.TaskRouterException;
 import org.apache.commons.lang3.StringUtils;
 
@@ -37,7 +37,7 @@ class CreateWorkspaceTask {
     String hostname = args[0];
     String bobPhone = args[1];
     String alicePhone = args[2];
-    System.out.println(String.format("server: %s\nBob phone: %s\nAlice phone: %s\n",
+    System.out.println(String.format("Server: %s\nBob phone: %s\nAlice phone: %s\n",
       hostname, bobPhone, alicePhone));
     Injector injector = Guice.createInjector();
     final TwilioAppSettings twilioSettings = injector.getInstance(TwilioAppSettings.class);
@@ -49,27 +49,27 @@ class CreateWorkspaceTask {
     params.put("FriendlyName", workspaceName);
     params.put("EventCallbackUrl", workspaceConfig.getString("event_callback"));
     try {
-      WorkspaceProxy workspaceProxy = WorkspaceProxy
-        .createWorkspaceProxy(twilioSettings.getTwilioTaskRouterClient(), params);
-      Activity idleActivity = workspaceProxy.findActivityByName("Idle").orElseThrow(() ->
+      WorkspaceFacade workspaceFacade = WorkspaceFacade
+        .create(twilioSettings.getTwilioTaskRouterClient(), params);
+      Activity idleActivity = workspaceFacade.findActivityByName("Idle").orElseThrow(() ->
         new TaskRouterException("The activity 'Idle' was not found to be set for Timeout."));
       params.clear();
       params.put("TimeoutActivitySid", idleActivity.getSid());
-      workspaceProxy.update(params);
-      addWorkersToWorkspace(workspaceProxy, workspaceConfig);
-      addTaskQueuesToWorkspace(workspaceProxy, workspaceConfig);
-      Workflow workflow = addWorkflowToWorkspace(workspaceProxy, workspaceConfig);
-      printSuccessAndInstructions(workspaceProxy, workflow);
+      workspaceFacade.update(params);
+      addWorkersToWorkspace(workspaceFacade, workspaceConfig);
+      addTaskQueuesToWorkspace(workspaceFacade, workspaceConfig);
+      Workflow workflow = addWorkflowToWorkspace(workspaceFacade, workspaceConfig);
+      printSuccessAndInstructions(workspaceFacade, workflow);
     } catch (TaskRouterException e) {
       LOG.severe(e.getMessage());
       exit(1);
     }
   }
 
-  public static void addWorkersToWorkspace(WorkspaceProxy workspaceProxy,
+  public static void addWorkersToWorkspace(WorkspaceFacade workspaceFacade,
                                            JsonObject workspaceJsonConfig) {
     JsonArray workersJson = workspaceJsonConfig.getJsonArray("workers");
-    Activity idleActivity = workspaceProxy.findActivityByName("Idle").orElseThrow(() ->
+    Activity idleActivity = workspaceFacade.findActivityByName("Idle").orElseThrow(() ->
       new TaskRouterException("The activity 'Idle' was not found. Workers cannot be added"));
     workersJson.getValuesAs(JsonObject.class).forEach(workerJson -> {
       Map<String, String> attributes = new HashMap<>();
@@ -77,20 +77,20 @@ class CreateWorkspaceTask {
       attributes.put("ActivitySid", idleActivity.getSid());
       attributes.put("Attributes", workerJson.getJsonObject("attributes").toString());
       try {
-        workspaceProxy.addWorker(attributes);
+        workspaceFacade.addWorker(attributes);
       } catch (TaskRouterException e) {
         LOG.warning(e.getMessage());
       }
     });
   }
 
-  public static void addTaskQueuesToWorkspace(WorkspaceProxy workspaceProxy,
+  public static void addTaskQueuesToWorkspace(WorkspaceFacade workspaceFacade,
                                               JsonObject workspaceJsonConfig) {
     JsonArray taskQueuesJson = workspaceJsonConfig.getJsonArray("task_queues");
-    Activity reservationActivity = workspaceProxy.findActivityByName("Reserved").orElseThrow(() ->
+    Activity reservationActivity = workspaceFacade.findActivityByName("Reserved").orElseThrow(() ->
       new TaskRouterException("The activity for reservations 'Reserved' was not found. "
         + "TaskQueues cannot be added."));
-    Activity assignmentActivity = workspaceProxy.findActivityByName("Busy").orElseThrow(() ->
+    Activity assignmentActivity = workspaceFacade.findActivityByName("Busy").orElseThrow(() ->
       new TaskRouterException("The activity for assignments 'Busy' was not found. "
         + "TaskQueues cannot be added."));
     taskQueuesJson.getValuesAs(JsonObject.class).forEach(taskQueueJson -> {
@@ -100,40 +100,40 @@ class CreateWorkspaceTask {
       params.put("AssignmentActivitySid", assignmentActivity.getSid());
       params.put("TargetWorkers", taskQueueJson.getString("targetWorkers"));
       try {
-        workspaceProxy.addTaskQueue(params);
+        workspaceFacade.addTaskQueue(params);
       } catch (TaskRouterException e) {
         LOG.warning(e.getMessage());
       }
     });
   }
 
-  public static Workflow addWorkflowToWorkspace(WorkspaceProxy workspaceProxy,
+  public static Workflow addWorkflowToWorkspace(WorkspaceFacade workspaceFacade,
                                                 JsonObject workspaceConfig) {
     JsonObject workflowJson = workspaceConfig.getJsonObject("workflow");
     String workflowName = workflowJson.getString("name");
-    return workspaceProxy.findWorkflowByName(workflowName)
+    return workspaceFacade.findWorkflowByName(workflowName)
       .orElseGet(() -> {
         Map<String, String> properties = new HashMap<>();
         properties.put("FriendlyName", workflowName);
         properties.put("AssignmentCallbackUrl", workflowJson.getString("callback"));
         properties.put("FallbackAssignmentCallbackUrl", workflowJson.getString("callback"));
         properties.put("TaskReservationTimeout", workflowJson.getString("timeout"));
-        String jsonWorkflowConfig = workspaceProxy.createWorkFlowJsonConfig(workflowJson);
+        String jsonWorkflowConfig = workspaceFacade.createWorkFlowJsonConfig(workflowJson);
         properties.put("Configuration", jsonWorkflowConfig);
-        return workspaceProxy.addWorkflow(properties);
+        return workspaceFacade.addWorkflow(properties);
       });
   }
 
-  public static void printSuccessAndInstructions(WorkspaceProxy workspaceProxy,
+  public static void printSuccessAndInstructions(WorkspaceFacade workspaceFacade,
                                                  Workflow workflow) {
-    Activity idleActivity = workspaceProxy.findActivityByName("Idle")
+    Activity idleActivity = workspaceFacade.findActivityByName("Idle")
       .orElseThrow(() -> new TaskRouterException("The IDLE activity does not exist."));
     StringBuilder exportVarsCmdStrBuilder = new StringBuilder(String.format(
       "\nexport WORKFLOW_SID=%s\n", workflow.getSid()));
     exportVarsCmdStrBuilder.append(String.format("export POST_WORK_ACTIVITY_SID=%s\n",
       idleActivity.getSid()));
     String successMsg = String.format("Workspace '%s' was created successfully.",
-      workspaceProxy.getFriendlyName());
+      workspaceFacade.getFriendlyName());
     final int lineLength = successMsg.length() + 2;
     System.out.println(StringUtils.repeat("#", lineLength));
     System.out.println(String.format(" %s ", successMsg));
