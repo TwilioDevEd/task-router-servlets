@@ -24,18 +24,32 @@
     <section class="body-content">
           <div class="panel panel-default full-height-container">
                 <div class="panel-heading"><strong>Missed calls</strong> <span class="text-muted">Product/Number<span></div>
-                <!-- Table -->
-                <table class="table">
-                  <tbody>
-                    <c:forEach var="missed_call" items="${missed_calls}" varStatus="i">
-                       <c:set var="jobID" value="${jobs.jobId}"/>
-                        <tr>
-                            <td>${missed_call.selectedProduct}</td>
-                            <td><a href="tel:${missed_call.phoneNumber}">${missed_call.internationalPhoneNumber}</a></td>
-                        </tr>
-                    </c:forEach>
-                  </tbody>
-                </table>
+                  <c:choose>
+                      <c:when test="${missedCalls.isEmpty()}">
+                        <div class="panel-body">
+                          <p>There are no missed calls at the moment.</p>
+                          <p>Call to your Twilio Phone number:<p>
+                          <ul>
+                          <c:set var="activePhoneNumbers" value="${settings.activePhoneNumbers}"/>
+                          <c:forEach var="phoneNumber" items="${activePhoneNumbers}">
+                            <li><a href="tel:${phoneNumber}">${phoneNumber}</a></li>
+                          </c:forEach>
+                        </div>
+                      </c:when>
+                      <c:otherwise>
+                        <!-- Table -->
+                        <table class="table">
+                          <tbody>
+                            <c:forEach var="missedCall" items="${missedCalls}" varStatus="i">
+                              <tr>
+                                <td>${missed_call.selectedProduct}</td>
+                                <td><a href="tel:${missedCall.phoneNumber}">${missed_call.internationalPhoneNumber}</a></td>
+                              </tr>
+                            </c:forEach>
+                          </tbody>
+                        </table>
+                      </c:otherwise>
+                  </c:choose>
            </div>
     </section>
 </div>
