@@ -12,17 +12,16 @@
 ;     Vim
 ;     Visual Studio
 
-; All characters supported
-charset = utf-8
-
-; Trim whitespaces at the end of the lines
-trim_trailing_whitespace = true
-
 ; top-most EditorConfig file
 root = true
 
 ; Unix-style newlines with a newline ending every file
 [*]
+
+; All characters supported
+charset = utf-8
+
+; Type of end of line
 end_of_line = lf
 
 ; New line at the end
@@ -34,3 +33,6 @@ indent_size = 2
 
 ; Max lenght per line
 max_line_length = 100
+
+; Trim whitespaces at the end of the lines
+trim_trailing_whitespace = true
