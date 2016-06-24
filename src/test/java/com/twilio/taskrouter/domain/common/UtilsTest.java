@@ -11,9 +11,12 @@ import java.io.File;
 import java.net.URI;
 import java.net.URL;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 
 public class UtilsTest {
+
+  private static final Logger LOG = Logger.getLogger(UtilsTest.class.getName());
 
   private static URI getResourceURI(String filePath) {
     Optional<URL> url =
@@ -39,11 +42,15 @@ public class UtilsTest {
 
   @Test
   public void copyTextToClipboad() throws Exception {
-    String content = "Content\nwith new line";
-    Utils.copyTextToClipboad(content);
-    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-    String result = (String) clipboard.getData(DataFlavor.stringFlavor);
-    Assert.assertEquals(content, result);
+    try {
+      String content = "Content\nwith new line";
+      Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+      Utils.copyTextToClipboad(content);
+      String result = (String) clipboard.getData(DataFlavor.stringFlavor);
+      Assert.assertEquals(content, result);
+    } catch (Throwable ex) {
+      LOG.warning("The clipboard features is not available in this system");
+    }
   }
 
   @Test

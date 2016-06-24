@@ -25,6 +25,9 @@ import java.util.logging.Logger;
 @Singleton
 public class EventsServlet extends HttpServlet {
 
+  public static final String LEAVE_MSG = "Sorry, All agents are busy. Please leave a message. "
+    + "We will call you as soon as possible";
+
   private static final Logger LOG = Logger.getLogger(EventsServlet.class.getName());
 
   private final TwilioAppSettings twilioSettings;
@@ -39,15 +42,15 @@ public class EventsServlet extends HttpServlet {
   }
 
   @Override
-  @Transactional
   public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
     IOException {
     Optional.ofNullable(req.getParameter(TwilioAppSettings.EVENT_TYPE_PARAM))
       .filter(TwilioAppSettings.DESIRABLE_EVENTS::contains)
-      .flatMap(eventType -> getTaskAttributes(req)).ifPresent(this::addMissingCallAndHangUp);
+      .flatMap(eventType -> getTaskAttributes(req)).ifPresent(this::addMissingCallAndLeaveMessage);
   }
 
-  public void addMissingCallAndHangUp(JsonObject taskAttributesJson) {
+  @Transactional
+  public void addMissingCallAndLeaveMessage(JsonObject taskAttributesJson) {
     String phoneNumber = taskAttributesJson.getString("from");
     String selectedProduct = taskAttributesJson.getString("selected_product");
     MissedCall missedCall = new MissedCall(phoneNumber, selectedProduct);
@@ -55,9 +58,9 @@ public class EventsServlet extends HttpServlet {
     LOG.info("Added Missing Call: " + missedCall);
     String callSid = taskAttributesJson.getString("call_sid");
     try {
-      twilioSettings.hangUpCall(callSid);
+      twilioSettings.leaveMessage(callSid, LEAVE_MSG);
     } catch (TwilioRestException e) {
-      LOG.warning(String.format("Error while hanging the call '%s': %s",
+      LOG.warning(String.format("Error leaving message for the call '%s': %s",
         callSid, e.getMessage()));
     }
   }

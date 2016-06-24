@@ -14,6 +14,7 @@ import javax.json.JsonObject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import static com.twilio.taskrouter.application.servlet.EventsServlet.LEAVE_MSG;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.never;
@@ -58,7 +59,7 @@ public class EventsServletTest {
 
     eventsServlet.doPost(requestMock, responseMock);
 
-    verify(twilioAppSettingsMock, times(1)).hangUpCall("call_sid-content");
+    verify(twilioAppSettingsMock, times(1)).leaveMessage("call_sid-content", LEAVE_MSG);
     verify(missedCallRepository, times(1)).add(any(MissedCall.class));
   }
 }

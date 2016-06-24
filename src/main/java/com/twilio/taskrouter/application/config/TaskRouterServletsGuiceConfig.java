@@ -1,6 +1,7 @@
 package com.twilio.taskrouter.application.config;
 
 import com.google.inject.persist.PersistFilter;
+import com.google.inject.persist.jpa.JpaPersistModule;
 import com.google.inject.servlet.ServletModule;
 import com.twilio.taskrouter.application.servlet.AssignmentServlet;
 import com.twilio.taskrouter.application.servlet.EnqueueServlet;
@@ -15,6 +16,7 @@ public class TaskRouterServletsGuiceConfig extends ServletModule {
 
   @Override
   public void configureServlets() {
+    install(new JpaPersistModule("jpa-taskrouter"));
     filter("/*").through(PersistFilter.class);
     serve("/").with(IndexServlet.class);
     serve("/call/incoming").with(IncomingCallServlet.class);

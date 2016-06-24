@@ -6,7 +6,9 @@ import com.twilio.sdk.TwilioTaskRouterClient;
 import com.twilio.sdk.resource.instance.Call;
 import com.twilio.sdk.resource.instance.IncomingPhoneNumber;
 import com.twilio.taskrouter.domain.error.TaskRouterException;
+import com.twilio.taskrouter.domain.model.PhoneNumber;
 import org.apache.commons.lang3.text.StrSubstitutor;
+import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import javax.inject.Singleton;
@@ -16,8 +18,11 @@ import javax.json.JsonReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -38,7 +43,7 @@ public class TwilioAppSettings {
   public static final String TASK_ATTRIBUTES_PARAM = "TaskAttributes";
 
   public static final List<String> DESIRABLE_EVENTS =
-    Arrays.asList("workflow.timeout", "task.canceled", "reservation.canceled");
+    Arrays.asList("workflow.timeout", "task.canceled");
 
   private final TwilioRestClient twilioRestClient;
 
@@ -48,9 +53,11 @@ public class TwilioAppSettings {
 
   private String postWorkActivitySID;
 
+  private String email;
+
   private String dequeuInstruction;
 
-  private List<String> activePhoneNumbers;
+  private List<PhoneNumber> activePhoneNumbers;
 
   public TwilioAppSettings() {
     String twilioAccountSid = Optional.ofNullable(System.getenv("TWILIO_ACCOUNT_SID")).orElseThrow(
@@ -78,6 +85,14 @@ public class TwilioAppSettings {
     return postWorkActivitySID;
   }
 
+  public String getEmail() {
+    if (email == null) {
+      this.email = Optional.ofNullable(System.getenv("EMAIL_ADDRESS")).orElseThrow(
+        () -> new TaskRouterException("EMAIL_ADDRESS is not set in the environment"));
+    }
+    return email;
+  }
+
   public String getDequeuInstruction() {
     if (dequeuInstruction == null) {
       dequeuInstruction = Json.createObjectBuilder()
@@ -88,12 +103,15 @@ public class TwilioAppSettings {
     return dequeuInstruction;
   }
 
-  public List<String> getActivePhoneNumbers() {
+  public List<PhoneNumber> getActivePhoneNumbers() {
     if (activePhoneNumbers == null) {
-      activePhoneNumbers = twilioRestClient.getAccount()
-        .getIncomingPhoneNumbers().getPageData().stream()
-        .map(IncomingPhoneNumber::getPhoneNumber).map(Utils::formatPhoneNumberToUSInternational)
-        .collect(Collectors.toList());
+      activePhoneNumbers = Optional.ofNullable(System.getenv("TWILIO_NUMBER"))
+        .map(PhoneNumber::new).map(Arrays::asList).orElseGet(() -> {
+          return twilioRestClient.getAccount()
+            .getIncomingPhoneNumbers().getPageData().stream()
+            .map(IncomingPhoneNumber::getPhoneNumber).map(PhoneNumber::new)
+            .collect(Collectors.toList());
+        });
     }
     return activePhoneNumbers;
   }
@@ -102,10 +120,19 @@ public class TwilioAppSettings {
     return twilioTaskRouterClient;
   }
 
-  public void hangUpCall(String callSID) throws TwilioRestException {
-    Call call = twilioRestClient.getAccount().getCall(callSID);
-    BasicNameValuePair hangUpCmd = new BasicNameValuePair("Status", "completed");
-    call.update(Arrays.asList(hangUpCmd));
+  public void leaveMessage(String callSID, String msgToUser) throws TwilioRestException {
+    try {
+      String routeUrl = String.format("http://twimlets.com/voicemail?Email=%s&Message=%s",
+        getEmail(), URLEncoder.encode(msgToUser, "UTF-8"));
+      Call call = twilioRestClient.getAccount().getCall(callSID);
+      List<NameValuePair> params = new ArrayList<>();
+      params.add(new BasicNameValuePair("Url", routeUrl));
+      params.add(new BasicNameValuePair("Method", "POST"));
+      call.update(params);
+    } catch (UnsupportedEncodingException e) {
+      throw new TaskRouterException("Error converting message to the user to a valid url "
+        + e.getMessage());
+    }
   }
 
   public JsonObject createWorkspaceConfig(String[] args) {
@@ -140,5 +167,4 @@ public class TwilioAppSettings {
     StrSubstitutor strSubstitutor = new StrSubstitutor(values, "%(", ")s");
     return strSubstitutor.replace(unparsedContent);
   }
-
 }

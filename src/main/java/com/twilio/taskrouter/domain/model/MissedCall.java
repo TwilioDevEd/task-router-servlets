@@ -1,13 +1,10 @@
 package com.twilio.taskrouter.domain.model;
 
-import com.twilio.taskrouter.domain.common.Utils;
-
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 import javax.validation.constraints.Size;
 import java.util.Date;
 
@@ -19,28 +16,24 @@ import java.util.Date;
 public final class MissedCall {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue
   private Long id;
 
   @Size(max = 30)
   private String selectedProduct;
 
-  @Size(max = 30)
-  private String phoneNumber;
+  @Embedded
+  private PhoneNumber phoneNumber;
 
   private Date created;
 
-  @Transient
-  private String internationalPhoneNumber;
-
   private MissedCall() {
-    this.created = new Date();
   }
 
   public MissedCall(String phoneNumber, String selectedProduct) {
-    this();
+    this.created = new Date();
     this.selectedProduct = selectedProduct;
-    this.phoneNumber = phoneNumber;
+    this.phoneNumber = new PhoneNumber(phoneNumber);
   }
 
   public Long getId() {
@@ -59,14 +52,6 @@ public final class MissedCall {
     this.selectedProduct = selectedProduct;
   }
 
-  public String getPhoneNumber() {
-    return phoneNumber;
-  }
-
-  public void setPhoneNumber(String phoneNumber) {
-    this.phoneNumber = phoneNumber;
-  }
-
   public Date getCreated() {
     return created;
   }
@@ -75,16 +60,21 @@ public final class MissedCall {
     this.created = created;
   }
 
+  public String getPhoneNumber() {
+    return phoneNumber.getPhoneNumber();
+  }
+
+  public void setPhoneNumber(String phoneNumber) {
+    this.phoneNumber.setPhoneNumber(phoneNumber);
+  }
+
   public String getInternationalPhoneNumber() {
-    if (internationalPhoneNumber == null) {
-      internationalPhoneNumber = Utils.formatPhoneNumberToUSInternational(phoneNumber);
-    }
-    return internationalPhoneNumber;
+    return phoneNumber.getInternationalPhoneNumber();
   }
 
   @Override
   public String toString() {
     return String.format("{ \"selected_product\": \"%s\", \"phone_number\": \"%s\" }",
-      selectedProduct, phoneNumber);
+      getSelectedProduct(), getPhoneNumber());
   }
 }

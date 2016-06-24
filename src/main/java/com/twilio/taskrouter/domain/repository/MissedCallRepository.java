@@ -31,7 +31,9 @@ public class MissedCallRepository {
    * @param entries {@link Iterable<MissedCall>} not <code>null<code>
    */
   public void addAll(Iterable<MissedCall> entries) {
+    entityManager.getTransaction().begin();
     entries.forEach(entityManager::persist);
+    entityManager.getTransaction().commit();
   }
 
   /**
@@ -52,7 +54,7 @@ public class MissedCallRepository {
     CriteriaQuery<MissedCall> query = criteriaBuilder.createQuery(MissedCall.class);
     Root<MissedCall> root = query.from(MissedCall.class);
     CriteriaQuery<MissedCall> select = query.select(root)
-      .orderBy(criteriaBuilder.asc(root.get("created")));
+      .orderBy(criteriaBuilder.desc(root.get("created")));
     return entityManager.createQuery(select).getResultList();
   }
 }

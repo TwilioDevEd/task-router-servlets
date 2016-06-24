@@ -31,8 +31,8 @@
                           <p>Call to your Twilio Phone number:<p>
                           <ul>
                           <c:set var="activePhoneNumbers" value="${settings.activePhoneNumbers}"/>
-                          <c:forEach var="phoneNumber" items="${activePhoneNumbers}">
-                            <li><a href="tel:${phoneNumber}">${phoneNumber}</a></li>
+                          <c:forEach var="phone" items="${activePhoneNumbers}">
+                            <li><a href="tel:${phone.phoneNumber}">${phone.internationalPhoneNumber}</a></li>
                           </c:forEach>
                         </div>
                       </c:when>
@@ -42,8 +42,8 @@
                           <tbody>
                             <c:forEach var="missedCall" items="${missedCalls}" varStatus="i">
                               <tr>
-                                <td>${missed_call.selectedProduct}</td>
-                                <td><a href="tel:${missedCall.phoneNumber}">${missed_call.internationalPhoneNumber}</a></td>
+                                <td>${missedCall.selectedProduct}</td>
+                                <td><a href="tel:${missedCall.phoneNumber}">${missedCall.internationalPhoneNumber}</a></td>
                               </tr>
                             </c:forEach>
                           </tbody>
