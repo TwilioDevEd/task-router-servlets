@@ -52,5 +52,4 @@ public class EnqueueServlet extends HttpServlet {
     return Optional.ofNullable(request.getParameter(TwilioAppSettings.DIGITS_PARAM))
       .filter(x -> x.equals("1")).map((first) -> "ProgrammableSMS").orElse("ProgrammableVoice");
   }
-
 }

@@ -24,8 +24,8 @@ public class AssignmentServlet extends HttpServlet {
   }
 
   @Override
-  public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
-    IOException {
+  public void doPost(HttpServletRequest req, HttpServletResponse resp)
+    throws ServletException, IOException {
     resp.setContentType("application/json");
     resp.getWriter().print(twilioSettings.getDequeuInstruction());
   }

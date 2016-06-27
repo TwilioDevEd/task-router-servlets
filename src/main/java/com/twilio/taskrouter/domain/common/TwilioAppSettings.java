@@ -7,26 +7,16 @@ import com.twilio.sdk.resource.instance.Call;
 import com.twilio.sdk.resource.instance.IncomingPhoneNumber;
 import com.twilio.taskrouter.domain.error.TaskRouterException;
 import com.twilio.taskrouter.domain.model.PhoneNumber;
-import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import javax.inject.Singleton;
 import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -87,8 +77,8 @@ public class TwilioAppSettings {
 
   public String getEmail() {
     if (email == null) {
-      this.email = Optional.ofNullable(System.getenv("EMAIL_ADDRESS")).orElseThrow(
-        () -> new TaskRouterException("EMAIL_ADDRESS is not set in the environment"));
+      this.email = Optional.ofNullable(System.getenv("MISSED_CALLS_EMAIL_ADDRESS")).orElseThrow(
+        () -> new TaskRouterException("MISSED_CALLS_EMAIL_ADDRESS is not set in the environment"));
     }
     return email;
   }
@@ -133,38 +123,5 @@ public class TwilioAppSettings {
       throw new TaskRouterException("Error converting message to the user to a valid url "
         + e.getMessage());
     }
-  }
-
-  public JsonObject createWorkspaceConfig(String[] args) {
-    final String configFileName = "workspace.json";
-    Optional<URL> url =
-      Optional.ofNullable(this.getClass().getResource(File.separator + configFileName));
-    return url.map(u -> {
-      try {
-        File workspaceConfigJsonFile = new File(u.toURI());
-        String jsonContent = Utils.readFileContent(workspaceConfigJsonFile);
-        String parsedContent = parseWorkspaceJsonContent(jsonContent, args);
-        try (JsonReader jsonReader = Json.createReader(new StringReader(parsedContent))) {
-          return jsonReader.readObject();
-        }
-      } catch (URISyntaxException e) {
-        throw new TaskRouterException(String.format("Wrong uri to find %s: %s",
-          configFileName, e.getMessage()));
-      } catch (IOException e) {
-        throw new TaskRouterException(String.format("Error while reading %s: %s",
-          configFileName, e.getMessage()));
-      }
-    }).orElseThrow(
-      () -> new TaskRouterException("There's no valid configuration in " + configFileName));
-  }
-
-  private String parseWorkspaceJsonContent(final String unparsedContent,
-                                           final String... args) {
-    Map<String, String> values = new HashMap<>();
-    values.put("host", args[0]);
-    values.put("bob_number", args[1]);
-    values.put("alice_number", args[2]);
-    StrSubstitutor strSubstitutor = new StrSubstitutor(values, "%(", ")s");
-    return strSubstitutor.replace(unparsedContent);
   }
 }

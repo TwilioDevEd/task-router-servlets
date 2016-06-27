@@ -7,19 +7,11 @@ import com.twilio.sdk.resource.instance.taskrouter.TaskQueue;
 import com.twilio.sdk.resource.instance.taskrouter.Worker;
 import com.twilio.sdk.resource.instance.taskrouter.Workflow;
 import com.twilio.sdk.resource.instance.taskrouter.Workspace;
-import com.twilio.sdk.taskrouter.WorkflowConfiguration;
-import com.twilio.sdk.taskrouter.WorkflowRule;
-import com.twilio.sdk.taskrouter.WorkflowRuleTarget;
 import com.twilio.taskrouter.domain.error.TaskRouterException;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * Proxy for {@link com.twilio.sdk.resource.instance.taskrouter.Workspace}
@@ -107,40 +99,5 @@ public final class WorkspaceFacade {
   public Optional<Workflow> findWorkflowByName(String workflowName) {
     return workspace.getWorkflows().getPageData().stream()
       .filter(workflow -> workspace.getFriendlyName().equals(workflowName)).findFirst();
-  }
-
-  public void update(Map<String, String> params) {
-    try {
-      workspace.update(params);
-    } catch (TwilioRestException e) {
-      throw new TaskRouterException(String.format("The workspace %s(%s) couldnt be updated: %s",
-        workspace.getFriendlyName(), workspace.getSid(), workspace.getSid()));
-    }
-  }
-
-  public String createWorkFlowJsonConfig(JsonObject workflowJson) {
-    try {
-      JsonArray routingConfigRules = workflowJson.getJsonArray("routingConfiguration");
-      TaskQueue defaultQueue = findTaskQueueByName("Default")
-        .orElseThrow(() -> new TaskRouterException("Default queue not found"));
-      WorkflowRuleTarget defaultRuleTarget
-        = new WorkflowRuleTarget(defaultQueue.getSid(), "1=1", 1, 30);
-      List<WorkflowRule> rules = routingConfigRules.getValuesAs(JsonObject.class).stream()
-        .map(ruleJson -> {
-          String ruleQueueName = ruleJson.getString("targetTaskQueue");
-          TaskQueue ruleQueue = findTaskQueueByName(ruleQueueName).orElseThrow(
-            () -> new TaskRouterException(String.format("%s queue not found", ruleQueueName)));
-          WorkflowRuleTarget queueRuleTarget = new WorkflowRuleTarget(ruleQueue.getSid());
-          queueRuleTarget.setPriority(5);
-          queueRuleTarget.setTimeout(30);
-          List<WorkflowRuleTarget> ruleTargets = Arrays.asList(queueRuleTarget, defaultRuleTarget);
-          return new WorkflowRule(ruleJson.getString("expression"), ruleTargets);
-        }).collect(Collectors.toList());
-      WorkflowConfiguration config = new WorkflowConfiguration(rules, defaultRuleTarget);
-      return config.toJSON();
-    } catch (Exception ex) {
-      throw new TaskRouterException("Error while creating workflow json configuration: "
-        + ex.getMessage());
-    }
   }
 }
