@@ -30,7 +30,7 @@
       ## Configuring the Workspace
 
       In order to instruct TaskRouter to handle the Tasks, we need to
-      configure a Workspace. This is possible either using the [TaskRouter
+      configure a Workspace. This is possible by either using the [TaskRouter
       Console](//www.twilio.com/console/taskrouter/workspaces) or
       programmatically through [TaskRouter REST API][api-main].
 
@@ -48,7 +48,7 @@
       Console](//www.twilio.com/console). The class `TwilioAppSettings`
       creates a `TwilioTaskRouterClient`, which is provided by the
       [Twilio Java library][twilio-java-doc]. This client is used by
-      [WorkspaceFacade]workspace-facade] which encapsulates all logic related to
+      [WorkspaceFacade][workspace-facade] which encapsulates all logic related to
       the `Workspace` class.
 
       ---
@@ -74,7 +74,7 @@
 
       This application uses the `createWorkspace` [Gradle Task][gradle-tasks] to
       orchestrate calls to our `WorkspaceFacade` class in order to handle a Workspace.
-      `CreateWorkspaceTask` uses data provided by `workspace.json` and captures 3 
+      `CreateWorkspaceTask` uses data provided by `workspace.json` and captures 3
       arguments in the following order:
 
       1. `hostname` - A public URL to which Twilio can send requests. This can be
@@ -104,25 +104,25 @@
       # Creating a Workspace
 
       After parsing the configuration, we use the static function `WorkspaceFacade#create`
-      to build a new workspace. Any existing workspace with the given `FriendlyName` 
-      will be deleted previously.
-      
-  .step(data-title='Creating the Workers',
+      to build a new workspace. Any existing workspace with the given `FriendlyName`
+      will be previously deleted.
+
+  .step(data-title='Creating Workers',
     data-file='src/main/java/com/twilio/taskrouter/application/CreateWorkspaceTask.java',
     data-highlight='70,80-96')
     :markdown
-      # Creating the Workers
+      # Creating Workers
 
       Using the JSON and provided parameters, we create the workers Bob and Alice.
-      The parameter `Attributes` contains: 
+      The parameter `Attributes` contains:
        1. `contact_uri` - Phone number used to receive incoming calls.
        1. `products` - List of products which the worker is specialized in.
 
-  .step(data-title='Creating the Task Queues',
+  .step(data-title='Creating Task Queues',
     data-file='src/main/java/com/twilio/taskrouter/application/CreateWorkspaceTask.java',
     data-highlight='71,98-119')
     :markdown
-      # Creating the Task Queues
+      # Creating Task Queues
 
       Next, we set up the Task Queues using `WorkspaceFacade#addTaskQueue`, each with a
       `FriendlyName` and a `TargetWorkers`, which is an expression to match Workers.
@@ -135,7 +135,7 @@
       1. `Default` - This queue targets all users and can be used when there are
          no specialist around for the chosen product. We can use the `1==1`
          expression here.
-         
+
   .step(data-title='Creating a Workflow',
    data-file='src/main/java/com/twilio/taskrouter/application/CreateWorkspaceTask.java',
    data-highlight='72,121-136,196-220')
@@ -146,21 +146,21 @@
      following parameters:
 
      1. `FriendlyName` as the name of a Workflow.
-     1. `AssignmentCallbackUrl` as the public URL where a request will be made 
-        when this Workflow assigns a Task to a Worker. We will learn how to 
+     1. `AssignmentCallbackUrl` as the public URL where a request will be made
+        when this Workflow assigns a Task to a Worker. We will learn how to
         implement it on the next steps.
      1. `TaskReservationTimeout` as the maximum time we want to wait until a Worker
         handles a Task.
      1. `Configuration` which is a set of rules for matching Tasks into Task Queues.
-        The routing configuration will take a Task attributes and match with Task
-        Queues. This application's Workflow rules are defined as:
-     1. `selected_product=="ProgrammableSMS"` expression for `SMS` Task
-        Queue. This expression will match any Task with `ProgrammableSMS` as
-        the `selected_product` attribute.
+        The routing configuration will take a `Task attributes` and match with `Task
+        Queues`.
+     1. This application's Workflow rules are defined as:`selected_product=="ProgrammableSMS"`
+        expression for `SMS` Task Queue. This expression will match any Task with
+        `ProgrammableSMS` as the `selected_product` attribute.
      1. `selected_product=="ProgrammableVoice` expression for `Voice`
         Task Queue.
-        
-.step(data-title="Handling Twilio's Request", 
+
+.step(data-title="Handling Twilio's Request",
   data-file='src/main/java/com/twilio/taskrouter/application/servlet/IncomingCallServlet.java',
   data-highlight='16-43')
   :markdown
@@ -171,7 +171,7 @@
 
     The endpoint will then process the request and generate a TwiML response.
     We'll use the Say verb to give the user product alternatives, and a key
-    they can press in order to select one. The Gather verb allows us to
+    they can press in order to select one of them. The Gather verb allows us to
     capture the user's key press.
 
     ---
@@ -193,7 +193,7 @@
     This request has a `Digits` parameter that holds the pressed keys.
     A `Task` will be created based on the pressed digit with the
     `selected_product` as an attribute. The Workflow will take this Task's
-    attributes and match with the [configured
+    attributes and match them with the [configured
     expressions](https://www.twilio.com/docs/api/taskrouter/expression-syntax)
     in order to find a Task Queue for this Task, so an appropriate available
     Worker can be assigned to handle it.
@@ -209,10 +209,10 @@
     * [TwiML Voice: <Gather> callback attributes](//www.twilio.com/docs/api/twiml/gather#attributes-action-parameters)
     * [TwiML Voice: <Enqueue> verb][enqueue-verb]
     * [TaskRouter: Using <Enqueue> to route calls with TaskRouter](//www.twilio.com/docs/api/taskrouter/twiml-integration#using-enqueue-to-route-calls-with-taskrouter)
-    
+
     [integration-doc]: //www.twilio.com/docs/api/taskrouter/twiml-integration#using-enqueue-to-route-calls-with-taskrouter
     [enqueue-verb]: //www.twilio.com/docs/api/twiml/enqueue
-    
+
  .step(data-title='Assigning a Worker',
     data-file='src/main/java/com/twilio/taskrouter/application/servlet/AssignmentServlet.java',
     data-highlight='13-33')
@@ -227,7 +227,7 @@
       1. At the same time the Reservation is created, a POST request is
       made to the Workflow's AssignmentCallbackURL, which was configured using
       the [`createWorkspace`][workspace-command-github] Gradle task.
-      This request includes the full details of the Task, the selected Worker,
+      This request includes all details of the Task, the selected Worker,
       and the Reservation.
 
       Handling this [Assignment Callback][assignment-callback] is a key
@@ -255,7 +255,7 @@
       [dequeue-section]: //www.twilio.com/docs/api/taskrouter/handling-assignment-callbacks#dequeue-call
       [activities]: //www.twilio.com/docs/quickstart/java/taskrouter/setup-understanding-activities
 
-  .step(data-title='Collecting Missed Calls', 
+  .step(data-title='Collecting Missed Calls',
     data-file='src/main/java/com/twilio/taskrouter/application/servlet/EventsServlet.java',
     data-highlight='22-72')
     :markdown
@@ -263,10 +263,10 @@
 
       This endpoint will be called after each [TaskRouter Event][event-types]
       is triggered. In our application, we are trying to collect missed calls,
-      so we would like to handle the events which names are contained in 
-      `TwilioAppSettings.DESIRABLE_EVENTS`. The `workflow.timeout` event is 
-      triggered when the Task waits more than the limit set on Workflow Configuration,
-      which happens when no available worker is found after trying out all 
+      so we would like to handle the events which names are contained in
+      `TwilioAppSettings.DESIRABLE_EVENTS`. The `workflow.timeout` event is
+      triggered when the Task waits more than the limit set on Workflow Configuration.
+      This happens when no available worker is found after trying out all
       possible Task Queues configured as rules for this Workflow.
 
       Here we use TwilioRestClient to route this call into a [Voicemail
@@ -290,27 +290,26 @@
       [event-types]: //www.twilio.com/docs/api/taskrouter/events#event-types
       [twimlets]:  //www.twilio.com/labs/twimlets
       [voicemail-twimlet]: //www.twilio.com/labs/twimlets/voicemail
-      
+
   .step
     :markdown
       ## Where to Next?
 
       That's it!
 
-      If you're a Java developer working with Twilio, you might enjoy these 
+      If you're a Java developer working with Twilio, you might enjoy these
       other tutorials:
 
       [**Click to Call**](//www.twilio.com/docs/tutorials/walkthrough/click-to-call/java/servlets)
 
       An example application implementing Click to Call using Twilio.
       
-      
       [**Automated-Survey-Servlets**](//www.twilio.com/docs/tutorials/walkthrough/automated-survey/java/servlets)
 
-      Instantly collect structured data from your users with a survey conducted 
+      Instantly collect structured data from your users with a survey conducted
       over a call or SMS text messages.
 
       Thanks for checking this tutorial out! If you have any feedback
       to share with us, we'd love to hear it.
-      [Contact the Twilio Developer Education Team](mailto:deved-oss@twilio.com) 
-      to let us know what you think.      
+      [Contact the Twilio Developer Education Team](mailto:deved-oss@twilio.com)
+      to let us know what you think.
