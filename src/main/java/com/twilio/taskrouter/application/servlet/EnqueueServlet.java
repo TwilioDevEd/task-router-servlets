@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -27,7 +28,7 @@ public class EnqueueServlet extends HttpServlet {
   private final TwilioAppSettings twilioSettings;
 
   @Inject
-  public EnqueueServlet(final TwilioAppSettings twilioSettings) {
+  public EnqueueServlet(TwilioAppSettings twilioSettings) {
     this.twilioSettings = twilioSettings;
   }
 
@@ -37,12 +38,12 @@ public class EnqueueServlet extends HttpServlet {
     String selectedProduct = getSelectedProduct(req);
     final TwiMLResponse twimlResponse = new TwiMLResponse();
     final Enqueue enqueue = new Enqueue();
-    enqueue.setWorkflowSid(twilioSettings.getWorkFlowSID());
+    enqueue.setWorkflowSid(twilioSettings.getWorkflowSid());
     try {
       enqueue.append(new Task(String.format("{\"selected_product\": \"%s\"}", selectedProduct)));
       twimlResponse.append(enqueue);
     } catch (final TwiMLException e) {
-      e.printStackTrace();
+      LOG.log(Level.SEVERE, "Error while appending enqueue task to the response", e);
     }
     resp.setContentType("application/xml");
     resp.getWriter().print(twimlResponse.toXML());

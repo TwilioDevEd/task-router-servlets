@@ -9,6 +9,8 @@ public class BeansGuiceConfig extends GuiceServletContextListener {
   @Override
   protected Injector getInjector() {
     return Guice.createInjector(
-      new TaskRouterServletsGuiceConfig());
+      new TaskRouterServletsGuiceConfig(),
+      new TaskRouterGuiceConfig()
+    );
   }
 }

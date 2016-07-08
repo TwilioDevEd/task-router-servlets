@@ -19,7 +19,7 @@ public class AssignmentServlet extends HttpServlet {
   private final TwilioAppSettings twilioSettings;
 
   @Inject
-  public AssignmentServlet(final TwilioAppSettings twilioSettings) {
+  public AssignmentServlet(TwilioAppSettings twilioSettings) {
     this.twilioSettings = twilioSettings;
   }
 
@@ -27,6 +27,6 @@ public class AssignmentServlet extends HttpServlet {
   public void doPost(HttpServletRequest req, HttpServletResponse resp)
     throws ServletException, IOException {
     resp.setContentType("application/json");
-    resp.getWriter().print(twilioSettings.getDequeuInstruction());
+    resp.getWriter().print(twilioSettings.getDeQueueInstruction());
   }
 }

@@ -59,7 +59,7 @@ public class EventsServletTest {
 
     eventsServlet.doPost(requestMock, responseMock);
 
-    verify(twilioAppSettingsMock, times(1)).leaveMessage("call_sid-content", LEAVE_MSG);
+    verify(twilioAppSettingsMock, times(1)).redirectToVoiceMail("call_sid-content", LEAVE_MSG);
     verify(missedCallRepository, times(1)).add(any(MissedCall.class));
   }
 }

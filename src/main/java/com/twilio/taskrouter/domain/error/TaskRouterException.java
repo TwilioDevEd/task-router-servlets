@@ -1,8 +1,8 @@
 package com.twilio.taskrouter.domain.error;
 
 /**
-* Exception for handled errors of the project
-*/
+ * Exception for handled errors of the project
+ */
 public class TaskRouterException extends RuntimeException {
 
   public TaskRouterException(Throwable ex) {
@@ -12,4 +12,9 @@ public class TaskRouterException extends RuntimeException {
   public TaskRouterException(String message) {
     super(message);
   }
+
+  public TaskRouterException(String message, Throwable parentErr) {
+    super(message, parentErr);
+  }
+
 }
