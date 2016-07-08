@@ -8,23 +8,26 @@ import com.twilio.sdk.resource.instance.taskrouter.Worker;
 import com.twilio.sdk.resource.instance.taskrouter.Workflow;
 import com.twilio.sdk.resource.instance.taskrouter.Workspace;
 import com.twilio.taskrouter.domain.error.TaskRouterException;
+import org.json.simple.parser.ParseException;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.logging.Logger;
 
 /**
- * Proxy for {@link com.twilio.sdk.resource.instance.taskrouter.Workspace}
+ * Facade pattern for {@link com.twilio.sdk.resource.instance.taskrouter.Workspace}
  */
 public final class WorkspaceFacade {
-
-  private static final Logger LOG = Logger.getLogger(WorkspaceFacade.class.getName());
 
   private final TwilioTaskRouterClient taskRouterClient;
 
   private final Workspace workspace;
 
-  private WorkspaceFacade(TwilioTaskRouterClient taskRouterClient, Workspace workspace) {
+  private Activity idleActivity;
+
+  private Map<String, Worker> phoneToWorker;
+
+  public WorkspaceFacade(TwilioTaskRouterClient taskRouterClient, Workspace workspace) {
     this.taskRouterClient = taskRouterClient;
     this.workspace = workspace;
   }
@@ -51,34 +54,45 @@ public final class WorkspaceFacade {
     }
   }
 
+  public static Optional<WorkspaceFacade> findBySid(String workspaceSid, TwilioTaskRouterClient
+    twilioTaskRouterClient) {
+    return twilioTaskRouterClient.getWorkspaces().getPageData().stream()
+      .filter(workspace -> workspace.getSid().equals(workspaceSid)).findFirst()
+      .map(workspace -> new WorkspaceFacade(twilioTaskRouterClient, workspace));
+  }
+
   public String getFriendlyName() {
     return workspace.getFriendlyName();
   }
 
-  public Worker addWorker(Map<String, String> parameters) {
+  public String getSid() {
+    return workspace.getSid();
+  }
+
+  public Worker addWorker(Map<String, String> newWorkerParams) {
     try {
 
-      return workspace.createWorker(parameters);
+      return workspace.createWorker(newWorkerParams);
     } catch (TwilioRestException e) {
       throw new TaskRouterException(String.format(
         "Error while adding the worker '%s' to workspace: %s",
-        parameters.get("FriendlyName"), e.getMessage()));
+        newWorkerParams.get("FriendlyName"), e.getMessage()));
     }
   }
 
-  public void addTaskQueue(Map<String, String> properties) {
+  public void addTaskQueue(Map<String, String> newTaskQueueParams) {
     try {
-      taskRouterClient.createTaskQueue(workspace.getSid(), properties);
+      taskRouterClient.createTaskQueue(workspace.getSid(), newTaskQueueParams);
     } catch (TwilioRestException e) {
       throw new TaskRouterException(String.format(
         "Error while adding the task queue '%s' to workspace: %s",
-        properties.get("FriendlyName"), e.getMessage()));
+        newTaskQueueParams.get("FriendlyName"), e.getMessage()));
     }
   }
 
-  public Workflow addWorkflow(Map<String, String> properties) {
+  public Workflow addWorkflow(Map<String, String> newWorkflowParams) {
     try {
-      return taskRouterClient.createWorkflow(workspace.getSid(), properties);
+      return taskRouterClient.createWorkflow(workspace.getSid(), newWorkflowParams);
     } catch (TwilioRestException e) {
       throw new TaskRouterException(String.format(
         "Error while adding workflow '%s' to workspace: %s",
@@ -99,5 +113,33 @@ public final class WorkspaceFacade {
   public Optional<Workflow> findWorkflowByName(String workflowName) {
     return workspace.getWorkflows().getPageData().stream()
       .filter(workflow -> workspace.getFriendlyName().equals(workflowName)).findFirst();
+  }
+
+  public Optional<Worker> findWorkerByPhone(String workerPhone) {
+    return Optional.ofNullable(getPhoneToWorker().get(workerPhone));
+  }
+
+  public Map<String, Worker> getPhoneToWorker() {
+    if (phoneToWorker == null) {
+      phoneToWorker = new HashMap<>();
+      workspace.getWorkers().getPageData().stream().forEach(worker -> {
+        try {
+          Map<String, Object> attributes = worker.parseAttributes();
+          phoneToWorker.put(attributes.get("contact_uri").toString(), worker);
+        } catch (ParseException e) {
+          throw new TaskRouterException(
+            String.format("'%s' has a malformed json attributes", worker.getFriendlyName()));
+        }
+      });
+    }
+    return phoneToWorker;
+  }
+
+  public Activity getIdleActivity() {
+    if (idleActivity == null) {
+      idleActivity = findActivityByName("Idle").get();
+
+    }
+    return idleActivity;
   }
 }

@@ -4,9 +4,6 @@ import com.twilio.taskrouter.domain.error.TaskRouterException;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.DataFlavor;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
@@ -38,19 +35,6 @@ public class UtilsTest {
     String s = Utils.readFileContent(new File(resourceURI));
     Assert.assertNotNull(s);
     Assert.assertEquals("The content was read correctly", s);
-  }
-
-  @Test
-  public void copyTextToClipboad() throws Exception {
-    try {
-      String content = "Content\nwith new line";
-      Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-      Utils.copyTextToClipboad(content);
-      String result = (String) clipboard.getData(DataFlavor.stringFlavor);
-      Assert.assertEquals(content, result);
-    } catch (Throwable ex) {
-      LOG.warning("The clipboard features is not available in this system");
-    }
   }
 
   @Test

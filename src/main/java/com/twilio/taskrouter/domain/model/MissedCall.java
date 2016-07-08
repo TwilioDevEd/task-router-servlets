@@ -27,7 +27,7 @@ public final class MissedCall {
 
   private Date created;
 
-  private MissedCall() {
+  MissedCall() {
   }
 
   public MissedCall(String phoneNumber, String selectedProduct) {
@@ -36,36 +36,12 @@ public final class MissedCall {
     this.phoneNumber = new PhoneNumber(phoneNumber);
   }
 
-  public Long getId() {
-    return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
   public String getSelectedProduct() {
     return selectedProduct;
   }
 
-  public void setSelectedProduct(String selectedProduct) {
-    this.selectedProduct = selectedProduct;
-  }
-
-  public Date getCreated() {
-    return created;
-  }
-
-  public void setCreated(Date created) {
-    this.created = created;
-  }
-
   public String getPhoneNumber() {
     return phoneNumber.getPhoneNumber();
-  }
-
-  public void setPhoneNumber(String phoneNumber) {
-    this.phoneNumber.setPhoneNumber(phoneNumber);
   }
 
   public String getInternationalPhoneNumber() {

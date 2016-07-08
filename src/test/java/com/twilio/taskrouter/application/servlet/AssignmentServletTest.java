@@ -35,13 +35,13 @@ public class AssignmentServletTest {
   public void shouldRequestTwilioAppSettingsDequeueInstruction() throws Exception {
     when(responseMock.getWriter()).thenReturn(mock(PrintWriter.class));
     assignmentServlet.doPost(requestMock, responseMock);
-    verify(twilioAppSettingsMock, times(1)).getDequeuInstruction();
+    verify(twilioAppSettingsMock, times(1)).getDeQueueInstruction();
   }
 
   @Test
   public void shouldReturnAJson() throws Exception {
     when(responseMock.getWriter()).thenReturn(mock(PrintWriter.class));
-    when(twilioAppSettingsMock.getDequeuInstruction()).thenReturn("{}");
+    when(twilioAppSettingsMock.getDeQueueInstruction()).thenReturn("{}");
 
     assignmentServlet.doPost(requestMock, responseMock);
 
