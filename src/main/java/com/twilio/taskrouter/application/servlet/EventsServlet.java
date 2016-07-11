@@ -53,19 +53,19 @@ public class EventsServlet extends HttpServlet {
   @Override
   public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
     IOException {
-    Optional.ofNullable(req.getParameter(TwilioAppSettings.EVENT_TYPE_PARAM))
+    Optional.ofNullable(req.getParameter("EventType"))
       .ifPresent(eventName -> {
         switch (eventName) {
           case "workflow.timeout":
           case "task.canceled":
-            parseAttributes(TwilioAppSettings.TASK_ATTRIBUTES_PARAM, req)
+            parseAttributes("TaskAttributes", req)
               .ifPresent(this::addMissingCallAndLeaveMessage);
             break;
           case "worker.activity.update":
-            Optional.ofNullable(req.getParameter(TwilioAppSettings.WORKER_ACTIVITY_PARAM))
+            Optional.ofNullable(req.getParameter("WorkerActivityName"))
               .filter("Offline"::equals)
               .ifPresent(offlineEvent -> {
-                parseAttributes(TwilioAppSettings.WORKER_ATTRIBUTES_PARAM, req)
+                parseAttributes("WorkerAttributes", req)
                   .ifPresent(this::notifyOfflineStatusToWorker);
               });
             break;

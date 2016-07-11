@@ -10,13 +10,11 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import javax.inject.Singleton;
-import javax.json.Json;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -28,15 +26,10 @@ import java.util.logging.Logger;
 @Singleton
 public class TwilioAppSettings {
 
-  public static final String DIGITS_PARAM = "Digits";
-  public static final String EVENT_TYPE_PARAM = "EventType";
-  public static final String WORKER_ACTIVITY_PARAM = "WorkerActivityName";
-  public static final String TASK_ATTRIBUTES_PARAM = "TaskAttributes";
-  public static final String WORKER_ATTRIBUTES_PARAM = "WorkerAttributes";
-  public static final List<String> MISSEDCALL_EVENTS =
-    Arrays.asList("workflow.timeout", "task.canceled");
   public static final String WORKSPACE_PROPERTIES_FILE_PATH = "workspace.properties";
+
   private static final Logger LOG = Logger.getLogger(TwilioAppSettings.class.getName());
+
   private final TwilioRestClient twilioRestClient;
 
   private final TwilioTaskRouterClient twilioTaskRouterClient;
@@ -54,8 +47,6 @@ public class TwilioAppSettings {
   private String email;
 
   private PhoneNumber phoneNumber;
-
-  private String dequeuInstruction;
 
   public TwilioAppSettings() {
     try {
@@ -118,16 +109,6 @@ public class TwilioAppSettings {
 
   public PhoneNumber getPhoneNumber() {
     return phoneNumber;
-  }
-
-  public String getDeQueueInstruction() {
-    if (dequeuInstruction == null) {
-      dequeuInstruction = Json.createObjectBuilder()
-        .add("instruction", "dequeue")
-        .add("post_work_activity_sid", getPostWorkActivitySid())
-        .build().toString();
-    }
-    return dequeuInstruction;
   }
 
   public void redirectToVoiceMail(String callSID, String msgToUser) throws TwilioRestException {

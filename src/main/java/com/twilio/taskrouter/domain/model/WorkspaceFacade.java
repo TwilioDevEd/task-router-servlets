@@ -17,7 +17,7 @@ import java.util.Optional;
 /**
  * Facade pattern for {@link com.twilio.sdk.resource.instance.taskrouter.Workspace}
  */
-public final class WorkspaceFacade {
+public class WorkspaceFacade {
 
   private final TwilioTaskRouterClient taskRouterClient;
 

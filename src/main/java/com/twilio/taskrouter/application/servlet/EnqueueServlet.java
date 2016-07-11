@@ -18,18 +18,18 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Parses a selected product, creating a Task on Task Router Workflow
+ * Selects a product by creating a Task on the Task Router Workflow
  */
 @Singleton
 public class EnqueueServlet extends HttpServlet {
 
   private static final Logger LOG = Logger.getLogger(EnqueueServlet.class.getName());
 
-  private final TwilioAppSettings twilioSettings;
+  private final String workflowSid;
 
   @Inject
   public EnqueueServlet(TwilioAppSettings twilioSettings) {
-    this.twilioSettings = twilioSettings;
+    this.workflowSid = twilioSettings.getWorkflowSid();
   }
 
   @Override
@@ -38,7 +38,7 @@ public class EnqueueServlet extends HttpServlet {
     String selectedProduct = getSelectedProduct(req);
     final TwiMLResponse twimlResponse = new TwiMLResponse();
     final Enqueue enqueue = new Enqueue();
-    enqueue.setWorkflowSid(twilioSettings.getWorkflowSid());
+    enqueue.setWorkflowSid(workflowSid);
     try {
       enqueue.append(new Task(String.format("{\"selected_product\": \"%s\"}", selectedProduct)));
       twimlResponse.append(enqueue);
@@ -50,7 +50,7 @@ public class EnqueueServlet extends HttpServlet {
   }
 
   public String getSelectedProduct(HttpServletRequest request) {
-    return Optional.ofNullable(request.getParameter(TwilioAppSettings.DIGITS_PARAM))
+    return Optional.ofNullable(request.getParameter("Digits"))
       .filter(x -> x.equals("1")).map((first) -> "ProgrammableSMS").orElse("ProgrammableVoice");
   }
 }
