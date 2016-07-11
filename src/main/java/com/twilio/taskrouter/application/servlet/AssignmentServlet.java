@@ -4,6 +4,7 @@ import com.twilio.taskrouter.domain.common.TwilioAppSettings;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.json.Json;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -16,17 +17,20 @@ import java.io.IOException;
 @Singleton
 public class AssignmentServlet extends HttpServlet {
 
-  private final TwilioAppSettings twilioSettings;
+  private final String dequeueInstruction;
 
   @Inject
-  public AssignmentServlet(TwilioAppSettings twilioSettings) {
-    this.twilioSettings = twilioSettings;
+  public AssignmentServlet(TwilioAppSettings twilioAppSettings) {
+    dequeueInstruction = Json.createObjectBuilder()
+      .add("instruction", "dequeue")
+      .add("post_work_activity_sid", twilioAppSettings.getPostWorkActivitySid())
+      .build().toString();
   }
 
   @Override
   public void doPost(HttpServletRequest req, HttpServletResponse resp)
     throws ServletException, IOException {
     resp.setContentType("application/json");
-    resp.getWriter().print(twilioSettings.getDeQueueInstruction());
+    resp.getWriter().print(dequeueInstruction);
   }
 }

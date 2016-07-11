@@ -27,7 +27,7 @@ public final class MissedCall {
 
   private Date created;
 
-  MissedCall() {
+  public MissedCall() {
   }
 
   public MissedCall(String phoneNumber, String selectedProduct) {

@@ -54,7 +54,7 @@ public class EventsServletTest {
       .add("selected_product", "selected_product-content")
       .add("call_sid", "call_sid-content")
       .build();
-    when(requestMock.getParameter(TwilioAppSettings.TASK_ATTRIBUTES_PARAM))
+    when(requestMock.getParameter("TaskAttributes"))
       .thenReturn(taskAttribs.toString());
 
     eventsServlet.doPost(requestMock, responseMock);
