@@ -25,6 +25,7 @@ uses a SQLite database to log phone calls which were not assisted.
 ### Local Development
 
 1. First clone this repository and `cd` into it.
+
   ```
   $ git clone git@github.com:TwilioDevEd/task-router-servlets.git
   $ cd task-router-servlets
@@ -63,9 +64,10 @@ uses a SQLite database to log phone calls which were not assisted.
   $ export WORKFLOW_SID=<hashvalue-workflow-sid>
   $ export POST_WORK_ACTIVITY_SID=<hashvalue-post-work-activity-sid>
   ```
+
   When the user calls, he will choose one option which will redirect him to
-  the first agent whose phone number is __agent1-phone__. If the user gets
-  no answer in 30 seconds he will be redirected to the second agent whose
+  the first agent whose phone number is __agent1-phone__. If the user's call
+  is not responded in 30 seconds he will be redirected to the second agent whose
   phone number is __agent2-phone__.
 
 1. Start the server.
@@ -73,6 +75,7 @@ uses a SQLite database to log phone calls which were not assisted.
   ```bash
   $ ./gradlew appRun
   ```
+
 1. Expose your local web server to the internet using ngrok.
 
   You can click [here](https://www.twilio.com/blog/2015/09/6-awesome-reasons-to-use-ngrok-when-testing-webhooks.html)
