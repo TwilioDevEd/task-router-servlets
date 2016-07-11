@@ -12,7 +12,7 @@ import javax.validation.constraints.Size;
 @Embeddable
 public class PhoneNumber {
 
-  @Size(max = 30)
+  @Size(max = 15)
   private String phoneNumber;
 
   @Transient

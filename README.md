@@ -29,19 +29,21 @@ uses a SQLite database to log phone calls which were not assisted.
   $ git clone git@github.com:TwilioDevEd/task-router-servlets.git
   $ cd task-router-servlets
   ```
-
-1. Edit the sample configuration file `.env.example` and edit it to match
- your configuration.
-
-  You can use the `.env.example` in a unix based operative system with the
-  `source` command to load the variables into your environment:
+  
+1. Copy the sample configuration file and edit it to match your configuration.
 
   ```bash
-  $ source .env.example
+  $ cp .env.example .env
   ```
 
+  You can find your `TWILIO_ACCOUNT_SID` and `TWILIO_AUTH_TOKEN` in your
+  Twilio Account Settings. You will also need a TWILIO_NUMBER that you
+  may find [here][twilio-phone-number].
+
+  Run `source .env` to export the environment variables.
+
   If you are using a different operating system, make sure that all the
-  variables from the `.env.example` file are loaded into your environment.
+  variables from the `.env` file are loaded into your environment.
 
 1. Make sure the tests succeed.
 

@@ -24,13 +24,12 @@
       * [Getting Started with Twilio TaskRouter](//www.twilio.com/docs/quickstart/java/taskrouter)
 
   .step(data-title='Configuring the Workspace',
-    data-file='src/main/java/com/twilio/taskrouter/domain/common/TwilioAppSettings.java',
-    data-highlight='52-59')
+    data-file='/src/main/resources/workspace.json')
     :markdown
       ## Configuring the Workspace
 
       In order to instruct TaskRouter to handle the Tasks, we need to
-      configure a Workspace. This is possible by either using the [TaskRouter
+      configure a Workspace. This is possible either using the [TaskRouter
       Console](//www.twilio.com/console/taskrouter/workspaces) or
       programmatically through [TaskRouter REST API][api-main].
 
@@ -48,7 +47,7 @@
       Console](//www.twilio.com/console). The class `TwilioAppSettings`
       creates a `TwilioTaskRouterClient`, which is provided by the
       [Twilio Java library][twilio-java-doc]. This client is used by
-      [WorkspaceFacade][workspace-facade] which encapsulates all logic related to
+      [WorkspaceFacade]workspace-facade] which encapsulates all logic related to
       the `Workspace` class.
 
       ---
@@ -66,16 +65,17 @@
       [workers-doc]: https://www.twilio.com/docs/api/taskrouter/workers
       [activities-doc]: https://www.twilio.com/docs/api/taskrouter/activities
 
-  .step(data-title='The Create Workspace Task',
+  .step(data-title='The CreateWorkspace Gradle Task',
     data-file='src/main/java/com/twilio/taskrouter/application/CreateWorkspaceTask.java',
-    data-highlight='45-59,163-184')
+    data-highlight='47-72,75-76,185-206')
     :markdown
-      ## The Create Workspace Task
+      ## The CreateWorkspace Gradle Task
 
-      This application uses the `createWorkspace` [Gradle Task][gradle-tasks] to
+      In this application the [Gradle task][gradle-tasks] `createWorkspace` is used to
       orchestrate calls to our `WorkspaceFacade` class in order to handle a Workspace.
-      `CreateWorkspaceTask` uses data provided by `workspace.json` and captures 3
-      arguments in the following order:
+      `CreateWorkspaceTask` is the java main class behind the Gradle task.
+      It uses data provided by `workspace.json` and expects 3 arguments in the
+      following order:
 
       1. `hostname` - A public URL to which Twilio can send requests. This can be
          either a cloud service or [ngrok][ngrok-docs], which can expose a local
@@ -83,7 +83,7 @@
       1. `bobPhone` - The telephone number of Bob, the Programmable SMS specialist.
       1. `alicePhone` - Same for Alice, the Programmable Voice specialist.
 
-      The function `CreateWorkspaceTask#createWorkspaceConfig` is used to load the
+      The function `createWorkspaceConfig` is used to load the
       configuration of the workspace form `workspace.json`.
 
       ---
@@ -98,52 +98,60 @@
       [ngrok-docs]: //ngrok.com/docs
 
   .step(data-title='Creating a Workspace',
-    data-file='src/main/java/com/twilio/taskrouter/application/CreateWorkspaceTask.java',
-    data-highlight='60-66,68-69')
+    data-file='src/main/java/com/twilio/taskrouter/domain/model/WorkspaceFacade.java',
+    data-highlight='35-55')
     :markdown
       # Creating a Workspace
 
-      After parsing the configuration, we use the static function `WorkspaceFacade#create`
-      to build a new workspace. Any existing workspace with the given `FriendlyName`
-      will be previously deleted.
+      Before creating a workspace, we'll always delete a previously created one,
+      using the `FriendlyName` as identifier. In order to create a
+      workspace you only need to provide a `FriendlyName`, and a `EventCallbackUrl`
+      which contains an url to be called every time an event is triggered in
+      the workspace.
 
-  .step(data-title='Creating Workers',
+
+  .step(data-title='Creating the Workers',
     data-file='src/main/java/com/twilio/taskrouter/application/CreateWorkspaceTask.java',
-    data-highlight='70,80-96')
+    data-highlight='62-63,78,89-104')
     :markdown
-      # Creating Workers
+      # Creating the Workers
 
-      Using the JSON and provided parameters, we create the workers Bob and Alice.
-      The parameter `Attributes` contains:
+      Using the JSON and provided parameters, we'll create two workers, Bob and Alice.
+      They each hold two **attributes**:
        1. `contact_uri` - Phone number used to receive incoming calls.
        1. `products` - List of products which the worker is specialized in.
 
-  .step(data-title='Creating Task Queues',
-    data-file='src/main/java/com/twilio/taskrouter/application/CreateWorkspaceTask.java',
-    data-highlight='71,98-119')
-    :markdown
-      # Creating Task Queues
+      We also need to select an activity and a name for each worker.
+      The selected activity will define the status of the worker.
 
-      Next, we set up the Task Queues using `WorkspaceFacade#addTaskQueue`, each with a
-      `FriendlyName` and a `TargetWorkers`, which is an expression to match Workers.
-      Our Task Queues are:
+  .step(data-title='Creating the Task Queues',
+    data-file='src/main/java/com/twilio/taskrouter/application/CreateWorkspaceTask.java',
+    data-highlight='79,106-127')
+    :markdown
+      # Creating the Task Queues
+
+      Next, we set up the Task Queues. Each with a name and a `TargetWorkers` property,
+      which is an expression to match Workers. Our Task Queues are:
 
       1. `SMS` - Will target Workers specialized in Programmable SMS, such
-         as Bob, using the expression `products HAS "ProgrammableSMS"`.
+         as Bob, using the expression `"products HAS \"ProgrammableSMS\""`.
       1. `Voice` - Will do the same for Programmable Voice Workers, such
-         as Alice, using the expression `products HAS "ProgrammableVoice"`.
-      1. `Default` - This queue targets all users and can be used when there are
-         no specialist around for the chosen product. We can use the `1==1`
+         as Alice, using the expression `"products HAS \"ProgrammableVoice\""`.
+      1. `All` - This queue targets all users and can be used when there are
+         no specialist around for the chosen product. We can use the `"1==1"`
          expression here.
+      ---
+      **See Also:**
+      * [TaskRouter REST API: Task Queues](//www.twilio.com/docs/api/taskrouter/taskqueues)
+      * [TargetWorkers's Expressions](//www.twilio.com/docs/api/taskrouter/taskqueues#target-workers)
 
   .step(data-title='Creating a Workflow',
    data-file='src/main/java/com/twilio/taskrouter/application/CreateWorkspaceTask.java',
-   data-highlight='72,121-136,196-220')
+   data-highlight='80,129-144')
    :markdown
      # Creating a Workflow
 
-     Finally, we set up the Workflow with `WorkspaceFacade#addWorkflow` using the
-     following parameters:
+     Finally, we set up the Workflow using the following parameters:
 
      1. `FriendlyName` as the name of a Workflow.
      1. `AssignmentCallbackUrl` as the public URL where a request will be made
@@ -152,17 +160,17 @@
      1. `TaskReservationTimeout` as the maximum time we want to wait until a Worker
         handles a Task.
      1. `Configuration` which is a set of rules for matching Tasks into Task Queues.
-        The routing configuration will take a `Task attributes` and match with `Task
-        Queues`.
-     1. This application's Workflow rules are defined as:`selected_product=="ProgrammableSMS"`
-        expression for `SMS` Task Queue. This expression will match any Task with
-        `ProgrammableSMS` as the `selected_product` attribute.
+        The routing configuration will take a Task attributes and match with Task
+        Queues. This application's Workflow rules are defined as:
+     1. `selected_product=="ProgrammableSMS"` expression for `SMS` Task
+        Queue. This expression will match any Task with `ProgrammableSMS` as
+        the `selected_product` attribute.
      1. `selected_product=="ProgrammableVoice` expression for `Voice`
         Task Queue.
 
 .step(data-title="Handling Twilio's Request",
   data-file='src/main/java/com/twilio/taskrouter/application/servlet/IncomingCallServlet.java',
-  data-highlight='16-43')
+  data-highlight='16-44')
   :markdown
     ## Handling Twilio's Request
 
@@ -171,7 +179,7 @@
 
     The endpoint will then process the request and generate a TwiML response.
     We'll use the Say verb to give the user product alternatives, and a key
-    they can press in order to select one of them. The Gather verb allows us to
+    they can press in order to select one. The Gather verb allows us to
     capture the user's key press.
 
     ---
@@ -193,8 +201,8 @@
     This request has a `Digits` parameter that holds the pressed keys.
     A `Task` will be created based on the pressed digit with the
     `selected_product` as an attribute. The Workflow will take this Task's
-    attributes and match them with the [configured
-    expressions](https://www.twilio.com/docs/api/taskrouter/expression-syntax)
+    attributes and match with the [configured
+    expressions](//www.twilio.com/docs/api/taskrouter/expression-syntax)
     in order to find a Task Queue for this Task, so an appropriate available
     Worker can be assigned to handle it.
 
@@ -215,7 +223,7 @@
 
  .step(data-title='Assigning a Worker',
     data-file='src/main/java/com/twilio/taskrouter/application/servlet/AssignmentServlet.java',
-    data-highlight='13-33')
+    data-highlight='14-36')
     :markdown
       ## Assigning a Worker
 
@@ -226,8 +234,8 @@
          linking the Task to the selected Worker.
       1. At the same time the Reservation is created, a POST request is
       made to the Workflow's AssignmentCallbackURL, which was configured using
-      the [`createWorkspace`][workspace-command-github] Gradle task.
-      This request includes all details of the Task, the selected Worker,
+      the Gradle task [`createWorkspace`][workspace-command-github].
+      This request includes the full details of the Task, the selected Worker,
       and the Reservation.
 
       Handling this [Assignment Callback][assignment-callback] is a key
@@ -263,11 +271,11 @@
 
       This endpoint will be called after each [TaskRouter Event][event-types]
       is triggered. In our application, we are trying to collect missed calls,
-      so we would like to handle the events which names are contained in
-      `TwilioAppSettings.DESIRABLE_EVENTS`. The `workflow.timeout` event is
-      triggered when the Task waits more than the limit set on Workflow Configuration.
-      This happens when no available worker is found after trying out all
-      possible Task Queues configured as rules for this Workflow.
+      so we would like to handle the `workflow.timeout` event. This event is
+      triggered when the Task waits more than the limit set on Workflow
+      Configuration, which happens when no available worker is found after
+      trying out all possible Task Queues configured as rules for this
+      Workflow.
 
       Here we use TwilioRestClient to route this call into a [Voicemail
       Twimlet][voicemail-twimlet]. Twimlets are tiny web applications for
@@ -291,6 +299,27 @@
       [twimlets]:  //www.twilio.com/labs/twimlets
       [voicemail-twimlet]: //www.twilio.com/labs/twimlets/voicemail
 
+  .step(data-title="Changing a Worker's Activity", data-file='src/main/java/com/twilio/taskrouter/application/servlet/MessageServlet.java',
+        data-highlight='24-82')
+    :markdown
+      ## Changing a Worker's Activity
+
+      We have created this endpoint, so a worker can send an SMS message to the support
+      line Twilio number with the command "On" or "Off" to change their availability status.
+
+      This is important as a worker's activity will change to `Offline` when they miss
+      a call. When this happens, they receive an SMS letting them know that their activity
+      has changed, and that they can reply with the `On` command to make themselves
+      available for incoming calls again.
+
+      ---
+      **See Also:**
+      * [TaskRouter: Events](//www.twilio.com/docs/api/taskrouter/events)
+      * [TaskRouter: Event types][event-types]
+
+      [event-types]: //www.twilio.com/docs/api/taskrouter/events#event-types
+      [voicemail-twimlet]: //www.twilio.com/labs/twimlets/voicemail
+
   .step
     :markdown
       ## Where to Next?
@@ -303,7 +332,8 @@
       [**Click to Call**](//www.twilio.com/docs/tutorials/walkthrough/click-to-call/java/servlets)
 
       An example application implementing Click to Call using Twilio.
-      
+
+
       [**Automated-Survey-Servlets**](//www.twilio.com/docs/tutorials/walkthrough/automated-survey/java/servlets)
 
       Instantly collect structured data from your users with a survey conducted
