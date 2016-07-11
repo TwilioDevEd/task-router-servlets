@@ -37,12 +37,12 @@ programmatically through <a href="https://www.twilio.com/docs/api/taskrouter/res
 <p>A <a href="https://www.twilio.com/docs/api/taskrouter/workspaces">Workspace</a> is the container element for any TaskRouter
 application. The elements are:</p>
 <ul>
-<li><a href="https://www.twilio.com/docs/api/taskrouter/tasks">Tasks</a> - Represents a customer trying to contact an agent</li>
-<li><a href="https://www.twilio.com/docs/api/taskrouter/workers">Workers</a> - The agents responsible for handling Tasks</li>
-<li><a href="https://www.twilio.com/docs/api/taskrouter/taskqueues">Task Queues</a> - Holds Tasks to be consumed by a set of Workers</li>
-<li><a href="https://www.twilio.com/docs/api/taskrouter/workflows">Workflows</a> - Responsible for matching Tasks into Task Queues</li>
-<li><a href="https://www.twilio.com/docs/api/taskrouter/activities">Activities</a> - Possible states of a Worker. Eg: idle,
-offline, busy</li>
+<li><a href="https://www.twilio.com/docs/api/taskrouter/tasks">Tasks</a> - Represents a customer trying to contact an agent.</li>
+<li><a href="https://www.twilio.com/docs/api/taskrouter/workers">Workers</a> - The agents responsible for handling Tasks.</li>
+<li><a href="https://www.twilio.com/docs/api/taskrouter/taskqueues">Task Queues</a> - Holds Tasks to be consumed by a set of Workers.</li>
+<li><a href="https://www.twilio.com/docs/api/taskrouter/workflows">Workflows</a> - Responsible for matching Tasks into Task Queues.</li>
+<li><a href="https://www.twilio.com/docs/api/taskrouter/activities">Activities</a> - Possible states of a Worker, e.g. Idle,
+Offline, Busy.</li>
 </ul>
 <p>In order to build a client for this API, we need as system variables a
 <code>TWILIO_ACCOUNT_SID</code> and <code>TWILIO_AUTH_TOKEN</code> which you can find on <a href="//www.twilio.com/console">Twilio
@@ -71,7 +71,7 @@ application to the internet.</li>
 <li><code>alicePhone</code> - Same for Alice, the Programmable Voice specialist.</li>
 </ol>
 <p>The function <code>createWorkspaceConfig</code> is used to load the
-configuration of the workspace form <code>workspace.json</code>.</p>
+configuration of the workspace from <code>workspace.json</code>.</p>
 <hr>
 <p><strong>See Also:</strong></p>
 <ul>
@@ -157,7 +157,7 @@ attributes and match with the <a href="//www.twilio.com/docs/api/taskrouter/expr
 expressions</a>
 in order to find a Task Queue for this Task, so an appropriate available
 Worker can be assigned to handle it.</p>
-<p>We use the <a href="//www.twilio.com/docs/api/twiml/enqueue"><code>Enqueue</code> verb</a> with a <code>WorkflowSid</code> attribute
+<p>We use the <a href="//www.twilio.com/docs/api/twiml/enqueue"><code>Enqueue</code> verb</a> with a <code>workflowSid</code> attribute
 to <a href="//www.twilio.com/docs/api/taskrouter/twiml-integration#using-enqueue-to-route-calls-with-taskrouter">integrate with TaskRouter</a>. Then the voice call will
 be put on hold while TaskRouter tries to find an available Worker to
 handle this Task.</p>
