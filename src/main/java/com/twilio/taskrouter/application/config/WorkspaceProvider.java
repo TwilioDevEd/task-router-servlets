@@ -20,7 +20,7 @@ public class WorkspaceProvider implements Provider<WorkspaceFacade> {
   @Inject
   public WorkspaceProvider(TwilioAppSettings twilioAppSettings) {
     this.taskRouterClient = twilioAppSettings.getTwilioTaskRouterClient();
-    this.workspaceSid = twilioAppSettings.getWorkspaceSID();
+    this.workspaceSid = twilioAppSettings.getWorkspaceSid();
   }
 
   @Override

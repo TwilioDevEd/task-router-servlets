@@ -5,12 +5,14 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 import com.twilio.taskrouter.domain.error.TaskRouterException;
 
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
+import java.util.Properties;
 
 /**
  * Complementary functions
@@ -33,17 +35,6 @@ public final class Utils {
   }
 
   /**
-   * Copy some texto to the system clipboard
-   *
-   * @param text {@link String} to copy
-   */
-  public static void copyTextToClipboad(String text) {
-    StringSelection selection = new StringSelection(text);
-    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-    clipboard.setContents(selection, selection);
-  }
-
-  /**
    * Converts a phone number into the American International Standard
    *
    * @param phoneNumber Phone number
@@ -56,6 +47,25 @@ public final class Utils {
       return phoneUtil.format(usPhoneNumber, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL);
     } catch (NumberParseException e) {
       throw new TaskRouterException("Invalid phone format: " + e.toString());
+    }
+  }
+
+  public static Properties loadProperties(File propertiesFile) throws IOException {
+    final Properties properties;
+    try (InputStream in = new FileInputStream(propertiesFile)) {
+      properties = new Properties();
+      properties.load(in);
+    }
+    return properties;
+  }
+
+  public static void saveProperties(Properties properties, File propertiesFile, String comments)
+    throws IOException {
+    if (!(propertiesFile.exists() && propertiesFile.isFile())) {
+      propertiesFile.createNewFile();
+    }
+    try (OutputStream out = new FileOutputStream(propertiesFile)) {
+      properties.store(out, comments);
     }
   }
 

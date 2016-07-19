@@ -54,12 +54,12 @@ public class EventsServletTest {
       .add("selected_product", "selected_product-content")
       .add("call_sid", "call_sid-content")
       .build();
-    when(requestMock.getParameter(TwilioAppSettings.TASK_ATTRIBUTES_PARAM))
+    when(requestMock.getParameter("TaskAttributes"))
       .thenReturn(taskAttribs.toString());
 
     eventsServlet.doPost(requestMock, responseMock);
 
-    verify(twilioAppSettingsMock, times(1)).leaveMessage("call_sid-content", LEAVE_MSG);
+    verify(twilioAppSettingsMock, times(1)).redirectToVoiceMail("call_sid-content", LEAVE_MSG);
     verify(missedCallRepository, times(1)).add(any(MissedCall.class));
   }
 }

@@ -2,6 +2,7 @@ package com.twilio.taskrouter.application.servlet;
 
 import com.twilio.taskrouter.domain.common.TwilioAppSettings;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -32,6 +33,11 @@ public class EnqueueServletTest {
 
   @InjectMocks
   private EnqueueServlet enqueueServlet;
+
+  @Before
+  public void setUp() {
+    when(twilioAppSettingsMock.getWorkflowSid()).thenReturn("WWfXXXXXXXXXXXX");
+  }
 
   @Test
   public void shouldReturnATwimlResponse() throws Exception {

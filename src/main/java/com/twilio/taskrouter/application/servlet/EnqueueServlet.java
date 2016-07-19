@@ -14,21 +14,22 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Parses a selected product, creating a Task on Task Router Workflow
+ * Selects a product by creating a Task on the Task Router Workflow
  */
 @Singleton
 public class EnqueueServlet extends HttpServlet {
 
   private static final Logger LOG = Logger.getLogger(EnqueueServlet.class.getName());
 
-  private final TwilioAppSettings twilioSettings;
+  private final String workflowSid;
 
   @Inject
-  public EnqueueServlet(final TwilioAppSettings twilioSettings) {
-    this.twilioSettings = twilioSettings;
+  public EnqueueServlet(TwilioAppSettings twilioSettings) {
+    this.workflowSid = twilioSettings.getWorkflowSid();
   }
 
   @Override
@@ -37,19 +38,19 @@ public class EnqueueServlet extends HttpServlet {
     String selectedProduct = getSelectedProduct(req);
     final TwiMLResponse twimlResponse = new TwiMLResponse();
     final Enqueue enqueue = new Enqueue();
-    enqueue.setWorkflowSid(twilioSettings.getWorkFlowSID());
+    enqueue.setWorkflowSid(workflowSid);
     try {
       enqueue.append(new Task(String.format("{\"selected_product\": \"%s\"}", selectedProduct)));
       twimlResponse.append(enqueue);
     } catch (final TwiMLException e) {
-      e.printStackTrace();
+      LOG.log(Level.SEVERE, "Error while appending enqueue task to the response", e);
     }
     resp.setContentType("application/xml");
     resp.getWriter().print(twimlResponse.toXML());
   }
 
   public String getSelectedProduct(HttpServletRequest request) {
-    return Optional.ofNullable(request.getParameter(TwilioAppSettings.DIGITS_PARAM))
+    return Optional.ofNullable(request.getParameter("Digits"))
       .filter(x -> x.equals("1")).map((first) -> "ProgrammableSMS").orElse("ProgrammableVoice");
   }
 }

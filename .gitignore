@@ -7,6 +7,8 @@ target/
 *.ipr
 *.iws
 *.sqlite
-*.env
+.env
 out/
 /.nb-gradle/
+workspace.properties
+

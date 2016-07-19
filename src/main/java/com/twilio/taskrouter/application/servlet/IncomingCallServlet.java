@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -34,7 +35,7 @@ public class IncomingCallServlet extends HttpServlet {
       gather.append(new Say("For Programmable SMS, press one. For Voice, press any other key."));
       twimlResponse.append(gather);
     } catch (TwiMLException e) {
-      LOG.warning("Unexpected error while creating incoming call response: " + e.getMessage());
+      LOG.log(Level.SEVERE, "Unexpected error while creating incoming call response", e);
     }
     resp.setContentType("application/xml");
     resp.getWriter().print(twimlResponse.toXML());
