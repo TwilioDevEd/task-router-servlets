@@ -60,7 +60,7 @@ public class TwilioAppSettings {
       String phoneNumberStr = properties.getProperty("phoneNumber");
       phoneNumber = new PhoneNumber(phoneNumberStr);
     } catch (IOException e) {
-      LOG.info("Welcome to Task Router tutorial for servlets. First time running....");
+      LOG.info("Welcome to TaskRouter tutorial for servlets. First time running....");
       twilioAccountSid = Optional.ofNullable(System.getenv("TWILIO_ACCOUNT_SID")).orElseThrow(
         () -> new TaskRouterException("TWILIO_ACCOUNT_SID is not set in the environment"));
       twilioAuthToken = Optional.ofNullable(System.getenv("TWILIO_AUTH_TOKEN")).orElseThrow(
@@ -71,6 +71,7 @@ public class TwilioAppSettings {
       email = Optional.ofNullable(System.getenv("MISSED_CALLS_EMAIL_ADDRESS")).orElseThrow(
         () -> new TaskRouterException("MISSED_CALLS_EMAIL_ADDRESS is not set in the environment"));
     }
+
     twilioRestClient = new TwilioRestClient(twilioAccountSid, twilioAuthToken);
     twilioTaskRouterClient = new TwilioTaskRouterClient(twilioAccountSid, twilioAuthToken);
   }

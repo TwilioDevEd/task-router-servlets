@@ -30,6 +30,7 @@ public class IndexServlet extends HttpServlet {
     IOException {
     req.setAttribute("missedCalls", missedCallRepository.getAll());
     req.setAttribute("settings", twilioAppSettings);
+
     req.getRequestDispatcher("index.jsp").forward(req, resp);
   }
 }

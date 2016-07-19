@@ -18,7 +18,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Selects a product by creating a Task on the Task Router Workflow
+ * Selects a product by creating a Task on the TaskRouter Workflow
  */
 @Singleton
 public class EnqueueServlet extends HttpServlet {
@@ -36,15 +36,18 @@ public class EnqueueServlet extends HttpServlet {
   public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
     IOException {
     String selectedProduct = getSelectedProduct(req);
+
     final TwiMLResponse twimlResponse = new TwiMLResponse();
     final Enqueue enqueue = new Enqueue();
     enqueue.setWorkflowSid(workflowSid);
+
     try {
       enqueue.append(new Task(String.format("{\"selected_product\": \"%s\"}", selectedProduct)));
       twimlResponse.append(enqueue);
     } catch (final TwiMLException e) {
       LOG.log(Level.SEVERE, "Error while appending enqueue task to the response", e);
     }
+
     resp.setContentType("application/xml");
     resp.getWriter().print(twimlResponse.toXML());
   }
