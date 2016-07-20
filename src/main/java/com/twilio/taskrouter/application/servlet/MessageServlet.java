@@ -39,9 +39,9 @@ public class MessageServlet extends HttpServlet {
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp)
     throws ServletException, IOException {
-    final String newStatus = getNewWorkerStatus(req);
-    String workerPhone = req.getParameter("From");
     final TwiMLResponse twimlResponse = new TwiMLResponse();
+    final String newStatus = getNewWorkerStatus(req);
+    final String workerPhone = req.getParameter("From");
 
     try {
       Sms responseSms = workspace.findWorkerByPhone(workerPhone).map(worker -> {
@@ -49,7 +49,6 @@ public class MessageServlet extends HttpServlet {
 
         return new Sms(String.format("Your status has changed to %s", newStatus));
       }).orElseGet(() -> new Sms("You are not a valid worker"));
-
       twimlResponse.append(responseSms);
     } catch (TwiMLException e) {
       LOG.log(Level.SEVERE, "Error while providing answer to a workers' sms", e);
@@ -59,12 +58,12 @@ public class MessageServlet extends HttpServlet {
     resp.getWriter().print(twimlResponse.toXML());
   }
 
-  public String getNewWorkerStatus(HttpServletRequest request) {
+  private String getNewWorkerStatus(HttpServletRequest request) {
     return Optional.ofNullable(request.getParameter("Body"))
       .filter(x -> x.equals("off")).map((first) -> "Offline").orElse("Idle");
   }
 
-  public void updateWorkerStatus(Worker worker, String activityFriendlyName) {
+  private void updateWorkerStatus(Worker worker, String activityFriendlyName) {
     Activity activity = workspace.findActivityByName(activityFriendlyName).orElseThrow(() ->
       new TaskRouterException(
         String.format("The activity '%s' doesn't exist in the workspace", activityFriendlyName)
@@ -79,5 +78,4 @@ public class MessageServlet extends HttpServlet {
       ));
     }
   }
-
 }

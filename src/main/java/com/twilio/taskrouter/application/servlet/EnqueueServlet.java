@@ -52,7 +52,7 @@ public class EnqueueServlet extends HttpServlet {
     resp.getWriter().print(twimlResponse.toXML());
   }
 
-  public String getSelectedProduct(HttpServletRequest request) {
+  String getSelectedProduct(HttpServletRequest request) {
     return Optional.ofNullable(request.getParameter("Digits"))
       .filter(x -> x.equals("1")).map((first) -> "ProgrammableSMS").orElse("ProgrammableVoice");
   }
