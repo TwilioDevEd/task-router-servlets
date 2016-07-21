@@ -31,7 +31,7 @@ an agent can call them back later on.</p>
 </ul>
 </div><div data-title="Configuring the Workspace" data-file="src/main/java/com/twilio/taskrouter/domain/common/TwilioAppSettings.java" data-highlight="52-59" class="step"><h2 id="configuring-the-workspace">Configuring the Workspace</h2>
 <p>In order to instruct TaskRouter to handle the Tasks, we need to
-configure a Workspace. This is possible either using the <a href="//www.twilio.com/console/taskrouter/workspaces">TaskRouter
+configure a Workspace. This is possible by either using the <a href="//www.twilio.com/console/taskrouter/workspaces">TaskRouter
 Console</a> or
 programmatically through <a href="https://www.twilio.com/docs/api/taskrouter/rest-api">TaskRouter REST API</a>.</p>
 <p>A <a href="https://www.twilio.com/docs/api/taskrouter/workspaces">Workspace</a> is the container element for any TaskRouter
@@ -49,7 +49,7 @@ offline, busy</li>
 Console</a>. The class <code>TwilioAppSettings</code>
 creates a <code>TwilioTaskRouterClient</code>, which is provided by the
 <a href="https://twilio.github.io/twilio-java">Twilio Java library</a>. This client is used by
-[WorkspaceFacade]workspace-facade] which encapsulates all logic related to
+<a href="https://github.com/TwilioDevEd/task-router-servlets/blob/master/src/main/java/com/twilio/taskrouter/domain/model/WorkspaceFacade.java">WorkspaceFacade</a> which encapsulates all logic related to
 the <code>Workspace</code> class.</p>
 <hr>
 <p><strong>See Also:</strong></p>
@@ -60,7 +60,7 @@ the <code>Workspace</code> class.</p>
 </div><div data-title="The Create Workspace Task" data-file="src/main/java/com/twilio/taskrouter/application/CreateWorkspaceTask.java" data-highlight="45-59,163-184" class="step"><h2 id="the-create-workspace-task">The Create Workspace Task</h2>
 <p>This application uses the <code>createWorkspace</code> <a href="https://docs.gradle.org/current/userguide/more_about_tasks.html">Gradle Task</a> to
 orchestrate calls to our <code>WorkspaceFacade</code> class in order to handle a Workspace.
-<code>CreateWorkspaceTask</code> uses data provided by <code>workspace.json</code> and captures 3 
+<code>CreateWorkspaceTask</code> uses data provided by <code>workspace.json</code> and captures 3
 arguments in the following order:</p>
 <ol>
 <li><code>hostname</code> - A public URL to which Twilio can send requests. This can be
@@ -81,16 +81,16 @@ configuration of the workspace form <code>workspace.json</code>.</p>
 </ul>
 </div><div data-title="Creating a Workspace" data-file="src/main/java/com/twilio/taskrouter/application/CreateWorkspaceTask.java" data-highlight="60-66,68-69" class="step"><h1 id="creating-a-workspace">Creating a Workspace</h1>
 <p>After parsing the configuration, we use the static function <code>WorkspaceFacade#create</code>
-to build a new workspace. Any existing workspace with the given <code>FriendlyName</code> 
-will be deleted previously.</p>
-</div><div data-title="Creating the Workers" data-file="src/main/java/com/twilio/taskrouter/application/CreateWorkspaceTask.java" data-highlight="70,80-96" class="step"><h1 id="creating-the-workers">Creating the Workers</h1>
+to build a new workspace. Any existing workspace with the given <code>FriendlyName</code>
+will be previously deleted.</p>
+</div><div data-title="Creating Workers" data-file="src/main/java/com/twilio/taskrouter/application/CreateWorkspaceTask.java" data-highlight="70,80-96" class="step"><h1 id="creating-workers">Creating Workers</h1>
 <p>Using the JSON and provided parameters, we create the workers Bob and Alice.
-The parameter <code>Attributes</code> contains: </p>
+The parameter <code>Attributes</code> contains:</p>
 <ol>
 <li><code>contact_uri</code> - Phone number used to receive incoming calls.</li>
 <li><code>products</code> - List of products which the worker is specialized in.</li>
 </ol>
-</div><div data-title="Creating the Task Queues" data-file="src/main/java/com/twilio/taskrouter/application/CreateWorkspaceTask.java" data-highlight="71,98-119" class="step"><h1 id="creating-the-task-queues">Creating the Task Queues</h1>
+</div><div data-title="Creating Task Queues" data-file="src/main/java/com/twilio/taskrouter/application/CreateWorkspaceTask.java" data-highlight="71,98-119" class="step"><h1 id="creating-task-queues">Creating Task Queues</h1>
 <p>Next, we set up the Task Queues using <code>WorkspaceFacade#addTaskQueue</code>, each with a
 <code>FriendlyName</code> and a <code>TargetWorkers</code>, which is an expression to match Workers.
 Our Task Queues are:</p>
@@ -108,17 +108,17 @@ expression here.</li>
 following parameters:</p>
 <ol>
 <li><code>FriendlyName</code> as the name of a Workflow.</li>
-<li><code>AssignmentCallbackUrl</code> as the public URL where a request will be made 
-when this Workflow assigns a Task to a Worker. We will learn how to 
+<li><code>AssignmentCallbackUrl</code> as the public URL where a request will be made
+when this Workflow assigns a Task to a Worker. We will learn how to
 implement it on the next steps.</li>
 <li><code>TaskReservationTimeout</code> as the maximum time we want to wait until a Worker
 handles a Task.</li>
 <li><code>Configuration</code> which is a set of rules for matching Tasks into Task Queues.
-The routing configuration will take a Task attributes and match with Task
-Queues. This application&#39;s Workflow rules are defined as:</li>
-<li><code>selected_product==&quot;ProgrammableSMS&quot;</code> expression for <code>SMS</code> Task
-Queue. This expression will match any Task with <code>ProgrammableSMS</code> as
-the <code>selected_product</code> attribute.</li>
+The routing configuration will take a <code>Task attributes</code> and match with <code>Task
+Queues</code>.</li>
+<li>This application&#39;s Workflow rules are defined as:<code>selected_product==&quot;ProgrammableSMS&quot;</code>
+expression for <code>SMS</code> Task Queue. This expression will match any Task with
+<code>ProgrammableSMS</code> as the <code>selected_product</code> attribute.</li>
 <li><code>selected_product==&quot;ProgrammableVoice</code> expression for <code>Voice</code>
 Task Queue.</li>
 </ol>
@@ -127,7 +127,7 @@ Task Queue.</li>
 URL specified on the <a href="//www.twilio.com/console/phone-numbers/incoming">number&#39;s configuration</a>.</p>
 <p>The endpoint will then process the request and generate a TwiML response.
 We&#39;ll use the Say verb to give the user product alternatives, and a key
-they can press in order to select one. The Gather verb allows us to
+they can press in order to select one of them. The Gather verb allows us to
 capture the user&#39;s key press.</p>
 <hr>
 <p><strong>See Also:</strong></p>
@@ -144,7 +144,7 @@ a key during the call.
 This request has a <code>Digits</code> parameter that holds the pressed keys.
 A <code>Task</code> will be created based on the pressed digit with the
 <code>selected_product</code> as an attribute. The Workflow will take this Task&#39;s
-attributes and match with the <a href="https://www.twilio.com/docs/api/taskrouter/expression-syntax">configured
+attributes and match them with the <a href="https://www.twilio.com/docs/api/taskrouter/expression-syntax">configured
 expressions</a>
 in order to find a Task Queue for this Task, so an appropriate available
 Worker can be assigned to handle it.</p>
@@ -169,7 +169,7 @@ linking the Task to the selected Worker.</li>
 <li>At the same time the Reservation is created, a POST request is
 made to the Workflow&#39;s AssignmentCallbackURL, which was configured using
 the <a href="https://github.com/TwilioDevEd/task-router-servlets/blob/master/src/main/java/com/twilio/taskrouter/application/CreateWorkspaceTask.java"><code>createWorkspace</code></a> Gradle task.
-This request includes the full details of the Task, the selected Worker,
+This request includes all details of the Task, the selected Worker,
 and the Reservation.</li>
 </ol>
 <p>Handling this <a href="//www.twilio.com/docs/api/taskrouter/handling-assignment-callbacks">Assignment Callback</a> is a key
@@ -192,10 +192,10 @@ phone number, TaskRouter will pick the Worker&#39;s <code>contact_uri</code> att
 </div><div data-title="Collecting Missed Calls" data-file="src/main/java/com/twilio/taskrouter/application/servlet/EventsServlet.java" data-highlight="22-72" class="step"><h2 id="collecting-missed-calls">Collecting Missed Calls</h2>
 <p>This endpoint will be called after each <a href="//www.twilio.com/docs/api/taskrouter/events#event-types">TaskRouter Event</a>
 is triggered. In our application, we are trying to collect missed calls,
-so we would like to handle the events which names are contained in 
-<code>TwilioAppSettings.DESIRABLE_EVENTS</code>. The <code>workflow.timeout</code> event is 
-triggered when the Task waits more than the limit set on Workflow Configuration,
-which happens when no available worker is found after trying out all 
+so we would like to handle the events which names are contained in
+<code>TwilioAppSettings.DESIRABLE_EVENTS</code>. The <code>workflow.timeout</code> event is
+triggered when the Task waits more than the limit set on Workflow Configuration.
+This happens when no available worker is found after trying out all
 possible Task Queues configured as rules for this Workflow.</p>
 <p>Here we use TwilioRestClient to route this call into a <a href="//www.twilio.com/labs/twimlets/voicemail">Voicemail
 Twimlet</a>. Twimlets are tiny web applications for
@@ -216,17 +216,17 @@ information from the customers that hang up before the Workflow times out.</p>
 </ul>
 </div><div class="step"><h2 id="where-to-next-">Where to Next?</h2>
 <p>That&#39;s it!</p>
-<p>If you&#39;re a Java developer working with Twilio, you might enjoy these 
+<p>If you&#39;re a Java developer working with Twilio, you might enjoy these
 other tutorials:</p>
 <p><a href="//www.twilio.com/docs/tutorials/walkthrough/click-to-call/java/servlets"><strong>Click to Call</strong></a></p>
 <p>An example application implementing Click to Call using Twilio.</p>
 <p><a href="//www.twilio.com/docs/tutorials/walkthrough/automated-survey/java/servlets"><strong>Automated-Survey-Servlets</strong></a></p>
-<p>Instantly collect structured data from your users with a survey conducted 
+<p>Instantly collect structured data from your users with a survey conducted
 over a call or SMS text messages.</p>
 <p>Thanks for checking this tutorial out! If you have any feedback
 to share with us, we&#39;d love to hear it.
-<a href="mailto:deved-oss@twilio.com">Contact the Twilio Developer Education Team</a> 
-to let us know what you think.      </p>
+<a href="mailto:deved-oss@twilio.com">Contact the Twilio Developer Education Team</a>
+to let us know what you think.</p>
 </div>
 <div class="saurus-files" style="display:none;"><textarea class="saurus-file" data-file="src/main/resources/workspace.json" data-mode="json">ewogICJuYW1lIjogIlR3aWxpbyBXb3Jrc3BhY2UiLAogICJldmVudF9jYWxsYmFjayI6ICIlKGhvc3Qpcy9ldmVudHMiLAogICJ3b3JrZXJzIjogWwogICAgewogICAgICAibmFtZSI6ICJCb2IiLAogICAgICAiYXR0cmlidXRlcyI6IHsKICAgICAgICAicHJvZHVjdHMiOiBbCiAgICAgICAgICAiUHJvZ3JhbW1hYmxlU01TIgogICAgICAgIF0sCiAgICAgICAgImNvbnRhY3RfdXJpIjogIiUoYm9iX251bWJlcilzIgogICAgICB9CiAgICB9LAogICAgewogICAgICAibmFtZSI6ICJBbGljZSIsCiAgICAgICJhdHRyaWJ1dGVzIjogewogICAgICAgICJwcm9kdWN0cyI6IFsKICAgICAgICAgICJQcm9ncmFtbWFibGVWb2ljZSIKICAgICAgICBdLAogICAgICAgICJjb250YWN0X3VyaSI6ICIlKGFsaWNlX251bWJlcilzIgogICAgICB9CiAgICB9CiAgXSwKICAiYWN0aXZpdGllcyI6IFsKICAgIHsKICAgICAgIm5hbWUiOiAiT2ZmbGluZSIsCiAgICAgICJhdmFpbGFiaWxpdHkiOiAiZmFsc2UiCiAgICB9LAogICAgewogICAgICAibmFtZSI6ICJJZGxlIiwKICAgICAgImF2YWlsYWJpbGl0eSI6ICJ0cnVlIgogICAgfSwKICAgIHsKICAgICAgIm5hbWUiOiAiQnVzeSIsCiAgICAgICJhdmFpbGFiaWxpdHkiOiAiZmFsc2UiCiAgICB9LAogICAgewogICAgICAibmFtZSI6ICJSZXNlcnZlZCIsCiAgICAgICJhdmFpbGFiaWxpdHkiOiAiZmFsc2UiCiAgICB9CiAgXSwKICAidGFza19xdWV1ZXMiOiBbCiAgICB7CiAgICAgICJuYW1lIjogIkRlZmF1bHQiLAogICAgICAidGFyZ2V0V29ya2VycyI6ICIxPT0xIgogICAgfSwKICAgIHsKICAgICAgIm5hbWUiOiAiU01TIiwKICAgICAgInRhcmdldFdvcmtlcnMiOiAicHJvZHVjdHMgSEFTIFwiUHJvZ3JhbW1hYmxlU01TXCIiCiAgICB9LAogICAgewogICAgICAibmFtZSI6ICJWb2ljZSIsCiAgICAgICJ0YXJnZXRXb3JrZXJzIjogInByb2R1Y3RzIEhBUyBcIlByb2dyYW1tYWJsZVZvaWNlXCIiCiAgICB9CiAgXSwKICAid29ya2Zsb3ciOiB7CiAgICAibmFtZSI6ICJTYWxlcyIsCiAgICAiY2FsbGJhY2siOiAiJShob3N0KXMvYXNzaWdubWVudCIsCiAgICAidGltZW91dCI6ICIxNSIsCiAgICAicm91dGluZ0NvbmZpZ3VyYXRpb24iOiBbCiAgICAgIHsKICAgICAgICAiZXhwcmVzc2lvbiI6ICJzZWxlY3RlZF9wcm9kdWN0PT1cIlByb2dyYW1tYWJsZVNNU1wiIiwKICAgICAgICAidGFyZ2V0VGFza1F1ZXVlIjogIlNNUyIKICAgICAgfSwKICAgICAgewogICAgICAgICJleHByZXNzaW9uIjogInNlbGVjdGVkX3Byb2R1Y3Q9PVwiUHJvZ3JhbW1hYmxlVm9pY2VcIiIsCiAgICAgICAgInRhcmdldFRhc2tRdWV1ZSI6ICJWb2ljZSIKICAgICAgfQogICAgXQogIH0KfQo=</textarea>
 <textarea class="saurus-file" data-file="src/main/java/com/twilio/taskrouter/domain/common/TwilioAppSettings.java" data-mode="java">cGFja2FnZSBjb20udHdpbGlvLnRhc2tyb3V0ZXIuZG9tYWluLmNvbW1vbjsKCmltcG9ydCBjb20udHdpbGlvLnNkay5Ud2lsaW9SZXN0Q2xpZW50OwppbXBvcnQgY29tLnR3aWxpby5zZGsuVHdpbGlvUmVzdEV4Y2VwdGlvbjsKaW1wb3J0IGNvbS50d2lsaW8uc2RrLlR3aWxpb1Rhc2tSb3V0ZXJDbGllbnQ7CmltcG9ydCBjb20udHdpbGlvLnNkay5yZXNvdXJjZS5pbnN0YW5jZS5DYWxsOwppbXBvcnQgY29tLnR3aWxpby5zZGsucmVzb3VyY2UuaW5zdGFuY2UuSW5jb21pbmdQaG9uZU51bWJlcjsKaW1wb3J0IGNvbS50d2lsaW8udGFza3JvdXRlci5kb21haW4uZXJyb3IuVGFza1JvdXRlckV4Y2VwdGlvbjsKaW1wb3J0IGNvbS50d2lsaW8udGFza3JvdXRlci5kb21haW4ubW9kZWwuUGhvbmVOdW1iZXI7CmltcG9ydCBvcmcuYXBhY2hlLmh0dHAuTmFtZVZhbHVlUGFpcjsKaW1wb3J0IG9yZy5hcGFjaGUuaHR0cC5tZXNzYWdlLkJhc2ljTmFtZVZhbHVlUGFpcjsKCmltcG9ydCBqYXZheC5pbmplY3QuU2luZ2xldG9uOwppbXBvcnQgamF2YXguanNvbi5Kc29uOwppbXBvcnQgamF2YS5pby5VbnN1cHBvcnRlZEVuY29kaW5nRXhjZXB0aW9uOwppbXBvcnQgamF2YS5uZXQuVVJMRW5jb2RlcjsKaW1wb3J0IGphdmEudXRpbC5BcnJheUxpc3Q7CmltcG9ydCBqYXZhLnV0aWwuQXJyYXlzOwppbXBvcnQgamF2YS51dGlsLkxpc3Q7CmltcG9ydCBqYXZhLnV0aWwuT3B0aW9uYWw7CmltcG9ydCBqYXZhLnV0aWwuc3RyZWFtLkNvbGxlY3RvcnM7CgovKioKICogVHdpbGlvIHNldHRpbmdzIGFuZCBoZWxwZXIgZnVuY3Rpb25zIGZvciB0aGlzIGFwcAogKi8KQFNpbmdsZXRvbgpwdWJsaWMgY2xhc3MgVHdpbGlvQXBwU2V0dGluZ3MgewoKICBwdWJsaWMgc3RhdGljIGZpbmFsIFN0cmluZyBESUdJVFNfUEFSQU0gPSAiRGlnaXRzIjsKCiAgcHVibGljIHN0YXRpYyBmaW5hbCBTdHJpbmcgRVZFTlRfVFlQRV9QQVJBTSA9ICJFdmVudFR5cGUiOwoKICBwdWJsaWMgc3RhdGljIGZpbmFsIFN0cmluZyBUQVNLX0FUVFJJQlVURVNfUEFSQU0gPSAiVGFza0F0dHJpYnV0ZXMiOwoKICBwdWJsaWMgc3RhdGljIGZpbmFsIExpc3Q8U3RyaW5nPiBERVNJUkFCTEVfRVZFTlRTID0KICAgIEFycmF5cy5hc0xpc3QoIndvcmtmbG93LnRpbWVvdXQiLCAidGFzay5jYW5jZWxlZCIpOwoKICBwcml2YXRlIGZpbmFsIFR3aWxpb1Jlc3RDbGllbnQgdHdpbGlvUmVzdENsaWVudDsKCiAgcHJpdmF0ZSBmaW5hbCBUd2lsaW9UYXNrUm91dGVyQ2xpZW50IHR3aWxpb1Rhc2tSb3V0ZXJDbGllbnQ7CgogIHByaXZhdGUgU3RyaW5nIHdvcmtGbG93U0lEOwoKICBwcml2YXRlIFN0cmluZyBwb3N0V29ya0FjdGl2aXR5U0lEOwoKICBwcml2YXRlIFN0cmluZyBlbWFpbDsKCiAgcHJpdmF0ZSBTdHJpbmcgZGVxdWV1SW5zdHJ1Y3Rpb247CgogIHByaXZhdGUgTGlzdDxQaG9uZU51bWJlcj4gYWN0aXZlUGhvbmVOdW1iZXJzOwoKICBwdWJsaWMgVHdpbGlvQXBwU2V0dGluZ3MoKSB7CiAgICBTdHJpbmcgdHdpbGlvQWNjb3VudFNpZCA9IE9wdGlvbmFsLm9mTnVsbGFibGUoU3lzdGVtLmdldGVudigiVFdJTElPX0FDQ09VTlRfU0lEIikpLm9yRWxzZVRocm93KAogICAgICAoKSAtPiBuZXcgVGFza1JvdXRlckV4Y2VwdGlvbigiVFdJTElPX0FDQ09VTlRfU0lEIGlzIG5vdCBzZXQgaW4gdGhlIGVudmlyb25tZW50IikpOwogICAgU3RyaW5nIHR3aWxpb0F1dGhUb2tlbiA9IE9wdGlvbmFsLm9mTnVsbGFibGUoU3lzdGVtLmdldGVudigiVFdJTElPX0FVVEhfVE9LRU4iKSkub3JFbHNlVGhyb3coCiAgICAgICgpIC0+IG5ldyBUYXNrUm91dGVyRXhjZXB0aW9uKCJUV0lMSU9fQVVUSF9UT0tFTiBpcyBub3Qgc2V0IGluIHRoZSBlbnZpcm9ubWVudCIpKTsKICAgIHR3aWxpb1Jlc3RDbGllbnQgPSBuZXcgVHdpbGlvUmVzdENsaWVudCh0d2lsaW9BY2NvdW50U2lkLCB0d2lsaW9BdXRoVG9rZW4pOwogICAgdHdpbGlvVGFza1JvdXRlckNsaWVudCA9IG5ldyBUd2lsaW9UYXNrUm91dGVyQ2xpZW50KHR3aWxpb0FjY291bnRTaWQsIHR3aWxpb0F1dGhUb2tlbik7CiAgfQoKICBwdWJsaWMgU3RyaW5nIGdldFdvcmtGbG93U0lEKCkgewogICAgaWYgKHdvcmtGbG93U0lEID09IG51bGwpIHsKICAgICAgdGhpcy53b3JrRmxvd1NJRCA9IE9wdGlvbmFsLm9mTnVsbGFibGUoU3lzdGVtLmdldGVudigiV09SS0ZMT1dfU0lEIikpLm9yRWxzZVRocm93KAogICAgICAgICgpIC0+IG5ldyBUYXNrUm91dGVyRXhjZXB0aW9uKCJXT1JLRkxPV19TSUQgaXMgbm90IHNldCBpbiB0aGUgZW52aXJvbm1lbnQiKSk7CiAgICB9CiAgICByZXR1cm4gd29ya0Zsb3dTSUQ7CiAgfQoKICBwdWJsaWMgU3RyaW5nIGdldFBvc3RXb3JrQWN0aXZpdHlTSUQoKSB7CiAgICBpZiAocG9zdFdvcmtBY3Rpdml0eVNJRCA9PSBudWxsKSB7CiAgICAgIHRoaXMucG9zdFdvcmtBY3Rpdml0eVNJRCA9IE9wdGlvbmFsLm9mTnVsbGFibGUoU3lzdGVtLmdldGVudigiUE9TVF9XT1JLX0FDVElWSVRZX1NJRCIpKQogICAgICAgIC5vckVsc2VUaHJvdygoKSAtPgogICAgICAgICAgbmV3IFRhc2tSb3V0ZXJFeGNlcHRpb24oIlBPU1RfV09SS19BQ1RJVklUWV9TSUQgaXMgbm90IHNldCBpbiB0aGUgZW52aXJvbm1lbnQiKSk7CiAgICB9CiAgICByZXR1cm4gcG9zdFdvcmtBY3Rpdml0eVNJRDsKICB9CgogIHB1YmxpYyBTdHJpbmcgZ2V0RW1haWwoKSB7CiAgICBpZiAoZW1haWwgPT0gbnVsbCkgewogICAgICB0aGlzLmVtYWlsID0gT3B0aW9uYWwub2ZOdWxsYWJsZShTeXN0ZW0uZ2V0ZW52KCJNSVNTRURfQ0FMTFNfRU1BSUxfQUREUkVTUyIpKS5vckVsc2VUaHJvdygKICAgICAgICAoKSAtPiBuZXcgVGFza1JvdXRlckV4Y2VwdGlvbigiTUlTU0VEX0NBTExTX0VNQUlMX0FERFJFU1MgaXMgbm90IHNldCBpbiB0aGUgZW52aXJvbm1lbnQiKSk7CiAgICB9CiAgICByZXR1cm4gZW1haWw7CiAgfQoKICBwdWJsaWMgU3RyaW5nIGdldERlcXVldUluc3RydWN0aW9uKCkgewogICAgaWYgKGRlcXVldUluc3RydWN0aW9uID09IG51bGwpIHsKICAgICAgZGVxdWV1SW5zdHJ1Y3Rpb24gPSBKc29uLmNyZWF0ZU9iamVjdEJ1aWxkZXIoKQogICAgICAgIC5hZGQoImluc3RydWN0aW9uIiwgImRlcXVldWUiKQogICAgICAgIC5hZGQoInBvc3Rfd29ya19hY3Rpdml0eV9zaWQiLCBnZXRQb3N0V29ya0FjdGl2aXR5U0lEKCkpCiAgICAgICAgLmJ1aWxkKCkudG9TdHJpbmcoKTsKICAgIH0KICAgIHJldHVybiBkZXF1ZXVJbnN0cnVjdGlvbjsKICB9CgogIHB1YmxpYyBMaXN0PFBob25lTnVtYmVyPiBnZXRBY3RpdmVQaG9uZU51bWJlcnMoKSB7CiAgICBpZiAoYWN0aXZlUGhvbmVOdW1iZXJzID09IG51bGwpIHsKICAgICAgYWN0aXZlUGhvbmVOdW1iZXJzID0gT3B0aW9uYWwub2ZOdWxsYWJsZShTeXN0ZW0uZ2V0ZW52KCJUV0lMSU9fTlVNQkVSIikpCiAgICAgICAgLm1hcChQaG9uZU51bWJlcjo6bmV3KS5tYXAoQXJyYXlzOjphc0xpc3QpLm9yRWxzZUdldCgoKSAtPiB7CiAgICAgICAgICByZXR1cm4gdHdpbGlvUmVzdENsaWVudC5nZXRBY2NvdW50KCkKICAgICAgICAgICAgLmdldEluY29taW5nUGhvbmVOdW1iZXJzKCkuZ2V0UGFnZURhdGEoKS5zdHJlYW0oKQogICAgICAgICAgICAubWFwKEluY29taW5nUGhvbmVOdW1iZXI6OmdldFBob25lTnVtYmVyKS5tYXAoUGhvbmVOdW1iZXI6Om5ldykKICAgICAgICAgICAgLmNvbGxlY3QoQ29sbGVjdG9ycy50b0xpc3QoKSk7CiAgICAgICAgfSk7CiAgICB9CiAgICByZXR1cm4gYWN0aXZlUGhvbmVOdW1iZXJzOwogIH0KCiAgcHVibGljIFR3aWxpb1Rhc2tSb3V0ZXJDbGllbnQgZ2V0VHdpbGlvVGFza1JvdXRlckNsaWVudCgpIHsKICAgIHJldHVybiB0d2lsaW9UYXNrUm91dGVyQ2xpZW50OwogIH0KCiAgcHVibGljIHZvaWQgbGVhdmVNZXNzYWdlKFN0cmluZyBjYWxsU0lELCBTdHJpbmcgbXNnVG9Vc2VyKSB0aHJvd3MgVHdpbGlvUmVzdEV4Y2VwdGlvbiB7CiAgICB0cnkgewogICAgICBTdHJpbmcgcm91dGVVcmwgPSBTdHJpbmcuZm9ybWF0KCJodHRwOi8vdHdpbWxldHMuY29tL3ZvaWNlbWFpbD9FbWFpbD0lcyZNZXNzYWdlPSVzIiwKICAgICAgICBnZXRFbWFpbCgpLCBVUkxFbmNvZGVyLmVuY29kZShtc2dUb1VzZXIsICJVVEYtOCIpKTsKICAgICAgQ2FsbCBjYWxsID0gdHdpbGlvUmVzdENsaWVudC5nZXRBY2NvdW50KCkuZ2V0Q2FsbChjYWxsU0lEKTsKICAgICAgTGlzdDxOYW1lVmFsdWVQYWlyPiBwYXJhbXMgPSBuZXcgQXJyYXlMaXN0PD4oKTsKICAgICAgcGFyYW1zLmFkZChuZXcgQmFzaWNOYW1lVmFsdWVQYWlyKCJVcmwiLCByb3V0ZVVybCkpOwogICAgICBwYXJhbXMuYWRkKG5ldyBCYXNpY05hbWVWYWx1ZVBhaXIoIk1ldGhvZCIsICJQT1NUIikpOwogICAgICBjYWxsLnVwZGF0ZShwYXJhbXMpOwogICAgfSBjYXRjaCAoVW5zdXBwb3J0ZWRFbmNvZGluZ0V4Y2VwdGlvbiBlKSB7CiAgICAgIHRocm93IG5ldyBUYXNrUm91dGVyRXhjZXB0aW9uKCJFcnJvciBjb252ZXJ0aW5nIG1lc3NhZ2UgdG8gdGhlIHVzZXIgdG8gYSB2YWxpZCB1cmwgIgogICAgICAgICsgZS5nZXRNZXNzYWdlKCkpOwogICAgfQogIH0KfQo=</textarea>
