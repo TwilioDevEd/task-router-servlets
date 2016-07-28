@@ -3,7 +3,7 @@
 .gradle/
 build/
 target/
-.iml
+*.iml
 .ipr
 .iws
 *.sqlite
