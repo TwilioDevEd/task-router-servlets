@@ -81,10 +81,10 @@ configuration of the workspace from <code>workspace.json</code>.</p>
 <li><a href="//www.twilio.com/docs/quickstart/java/taskrouter">TaskRouter Java Quickstart Overview</a></li>
 </ul>
 </div><div data-title="Creating a Workspace" data-file="src/main/java/com/twilio/taskrouter/domain/model/WorkspaceFacade.java" data-highlight="35-55" class="step"><h1 id="creating-a-workspace">Creating a Workspace</h1>
-<p>Before creating a workspace, we need to delete any others with the same 
+<p>Before creating a workspace, we need to delete any others with the same
 <code>FriendlyName</code> as identifier. In order to create a workspace we need
-to provide a <code>FriendlyName</code>, and a <code>EventCallbackUrl</code> which contains an 
-url to be called every time an event is triggered in the workspace.</p>
+to provide a <code>FriendlyName</code>, and a <code>EventCallbackUrl</code> which contains an
+URL to be called every time an event is triggered in the workspace.</p>
 <hr>
 <p><strong>See Also:</strong></p>
 <ul>
@@ -94,7 +94,7 @@ url to be called every time an event is triggered in the workspace.</p>
 <p>We&#39;ll create two workers, Bob and Alice. They each have two attributes:
 <code>contact_uri</code> a phone number and <code>products</code>, a list of products
 each worker is specialized in. We also need to specify an <code>activity_sid</code>
-and a name for each worker. The selected activity will define the status 
+and a name for each worker. The selected activity will define the status
 of the worker.</p>
 <hr>
 <p><strong>See Also:</strong></p>
@@ -144,7 +144,7 @@ Task Queue.</li>
 URL specified on the <a href="//www.twilio.com/console/phone-numbers/incoming">number&#39;s configuration</a>.</p>
 <p>The endpoint will then process the request and generate a TwiML response.
 We&#39;ll use the <a href="//www.twilio.com/docs/api/twiml/say">Say</a> verb to give the user
-product alternatives, and a key they can press in order to select one. 
+product alternatives, and a key they can press in order to select one.
 The <a href="//www.twilio.com/docs/api/twiml/gather">Gather</a> verb allows us to
 capture the user&#39;s key press.</p>
 <hr>
@@ -181,21 +181,24 @@ handle this Task.</p>
 </div><div data-title="Assigning a Worker" data-file="src/main/java/com/twilio/taskrouter/application/servlet/AssignmentServlet.java" data-highlight="14-36" class="step"><h2 id="assigning-a-worker">Assigning a Worker</h2>
 <p>When TaskRouter selects a Worker, it does the following:</p>
 <ol>
-<li>The Task&#39;s Assignment Status is set to <code>reserved</code>.</li>
-<li>A <a href="//www.twilio.com/docs/api/taskrouter/reservations">Reservation instance</a> is generated,
-linking the Task to the selected Worker.</li>
-<li>At the same time the Reservation is created, a POST request is
+<li><p>The Task&#39;s Assignment Status is set to <code>reserved</code>.</p>
+</li>
+<li><p>A <a href="//www.twilio.com/docs/api/taskrouter/reservations">Reservation instance</a> is generated,
+linking the Task to the selected Worker.</p>
+</li>
+<li><p>At the same time the Reservation is created, a POST request is
 made to the Workflow&#39;s AssignmentCallbackURL, which was configured using
-the Gradle task <a href="https://github.com/TwilioDevEd/task-router-servlets/blob/master/src/main/java/com/twilio/taskrouter/application/CreateWorkspaceTask.java"><code>createWorkspace</code></a>.
-This request includes the full details of the Task, the selected Worker,
-and the Reservation.</li>
+the Gradle task <a href="https://github.com/TwilioDevEd/task-router-servlets/blob/master/src/main/java/com/twilio/taskrouter/application/CreateWorkspaceTask.java"><code>createWorkspace</code></a>.</p>
+</li>
 </ol>
+<p>This request includes the full details of the Task, the selected Worker,
+and the Reservation.</p>
 <p>Handling this <a href="//www.twilio.com/docs/api/taskrouter/handling-assignment-callbacks">Assignment Callback</a> is a key
 component of building a TaskRouter application as we can instruct how the
 Worker will handle a Task. We could send a text, e-mail, push
 notifications or make a call.</p>
 <p>Since we created this Task during a voice call with an <code>Enqueue</code> verb,
-let&#39;s <a href="//www.twilio.com/docs/api/taskrouter/handling-assignment-callbacks#dequeue-call">instruct TaskRouter to dequeue</a> the call and dial
+lets <a href="//www.twilio.com/docs/api/taskrouter/handling-assignment-callbacks#dequeue-call">instruct TaskRouter to dequeue</a> the call and dial
 a Worker. If we do not specify a <code>to</code> parameter with a
 phone number, TaskRouter will pick the Worker&#39;s <code>contact_uri</code> attribute.</p>
 <p>We also send a <code>post_work_activity_sid</code> which will tell TaskRouter which
@@ -230,12 +233,12 @@ information from the customers that hang up before the Workflow times out.</p>
 <li><a href="//www.twilio.com/labs/twimlets">Twilio Twimlets</a></li>
 </ul>
 </div><div data-title="Changing a Worker's Activity" data-file="src/main/java/com/twilio/taskrouter/application/servlet/MessageServlet.java" data-highlight="24-82" class="step"><h2 id="changing-a-worker-s-activity">Changing a Worker&#39;s Activity</h2>
-<p>We have created this endpoint, so a worker can send an SMS message to the 
-support line with the command &quot;On&quot; or &quot;Off&quot; to change their availability 
+<p>We have created this endpoint, so a worker can send an SMS message to the
+support line with the command &quot;On&quot; or &quot;Off&quot; to change their availability
 status.</p>
-<p>This is important as a worker&#39;s activity will change to <code>Offline</code> when 
+<p>This is important as a worker&#39;s activity will change to <code>Offline</code> when
 they miss a call. When this happens, they receive an SMS letting them know
-that their activity has changed, and that they can reply with the <code>On</code> 
+that their activity has changed, and that they can reply with the <code>On</code>
 command to make themselves available for incoming calls again.</p>
 <hr>
 <p><strong>See Also:</strong></p>

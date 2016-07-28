@@ -103,11 +103,11 @@
     :markdown
       # Creating a Workspace
 
-      Before creating a workspace, we need to delete any others with the same 
+      Before creating a workspace, we need to delete any others with the same
       `FriendlyName` as identifier. In order to create a workspace we need
-      to provide a `FriendlyName`, and a `EventCallbackUrl` which contains an 
-      url to be called every time an event is triggered in the workspace.
-      
+      to provide a `FriendlyName`, and a `EventCallbackUrl` which contains an
+      URL to be called every time an event is triggered in the workspace.
+
       ---
       **See Also:**
       * [TaskRouter REST API: Workspaces](//www.twilio.com/docs/api/taskrouter/workspaces)
@@ -121,9 +121,9 @@
       We'll create two workers, Bob and Alice. They each have two attributes:
       `contact_uri` a phone number and `products`, a list of products
       each worker is specialized in. We also need to specify an `activity_sid`
-      and a name for each worker. The selected activity will define the status 
+      and a name for each worker. The selected activity will define the status
       of the worker.
-      
+
       ---
       **See Also:**
       * [TaskRouter REST API: Workers](//www.twilio.com/docs/api/taskrouter/workers)
@@ -144,7 +144,7 @@
       1. `All` - This queue targets all users and can be used when there are
          no specialist around for the chosen product. We can use the `"1==1"`
          expression here.
-         
+
       ---
       **See Also:**
       * [TaskRouter REST API: Task Queues](//www.twilio.com/docs/api/taskrouter/taskqueues)
@@ -181,10 +181,10 @@
 
     Right after receiving a call, Twilio will send a request to the
     URL specified on the [number's configuration](//www.twilio.com/console/phone-numbers/incoming).
-    
+
     The endpoint will then process the request and generate a TwiML response.
     We'll use the [Say](//www.twilio.com/docs/api/twiml/say) verb to give the user
-    product alternatives, and a key they can press in order to select one. 
+    product alternatives, and a key they can press in order to select one.
     The [Gather](//www.twilio.com/docs/api/twiml/gather) verb allows us to
     capture the user's key press.
 
@@ -236,11 +236,14 @@
       When TaskRouter selects a Worker, it does the following:
 
       1. The Task's Assignment Status is set to `reserved`.
+
       1. A [Reservation instance][reservation-instance-doc] is generated,
          linking the Task to the selected Worker.
+
       1. At the same time the Reservation is created, a POST request is
       made to the Workflow's AssignmentCallbackURL, which was configured using
       the Gradle task [`createWorkspace`][workspace-task-github].
+
       This request includes the full details of the Task, the selected Worker,
       and the Reservation.
 
@@ -250,7 +253,7 @@
       notifications or make a call.
 
       Since we created this Task during a voice call with an `Enqueue` verb,
-      let's [instruct TaskRouter to dequeue][dequeue-section] the call and dial
+      lets [instruct TaskRouter to dequeue][dequeue-section] the call and dial
       a Worker. If we do not specify a `to` parameter with a
       phone number, TaskRouter will pick the Worker's `contact_uri` attribute.
 
@@ -307,13 +310,13 @@
     :markdown
       ## Changing a Worker's Activity
 
-      We have created this endpoint, so a worker can send an SMS message to the 
-      support line with the command "On" or "Off" to change their availability 
+      We have created this endpoint, so a worker can send an SMS message to the
+      support line with the command "On" or "Off" to change their availability
       status.
 
-      This is important as a worker's activity will change to `Offline` when 
+      This is important as a worker's activity will change to `Offline` when
       they miss a call. When this happens, they receive an SMS letting them know
-      that their activity has changed, and that they can reply with the `On` 
+      that their activity has changed, and that they can reply with the `On`
       command to make themselves available for incoming calls again.
 
       ---
