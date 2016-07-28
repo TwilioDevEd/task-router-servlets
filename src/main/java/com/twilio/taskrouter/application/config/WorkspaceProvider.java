@@ -25,8 +25,8 @@ public class WorkspaceProvider implements Provider<WorkspaceFacade> {
 
   @Override
   public WorkspaceFacade get() {
-     return WorkspaceFacade.findBySid(workspaceSid, taskRouterClient).orElseThrow(()->
-       new TaskRouterException(String.format("There's no workspace with sid \"%s\"", workspaceSid))
-     );
+    return WorkspaceFacade.findBySid(workspaceSid, taskRouterClient).orElseThrow(() ->
+      new TaskRouterException(String.format("There's no workspace with sid \"%s\"", workspaceSid))
+    );
   }
 }

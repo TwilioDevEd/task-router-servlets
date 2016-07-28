@@ -3,9 +3,9 @@
 .gradle/
 build/
 target/
-*.iml
-*.ipr
-*.iws
+.iml
+.ipr
+.iws
 *.sqlite
 .env
 out/

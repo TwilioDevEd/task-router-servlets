@@ -66,14 +66,14 @@ class CreateWorkspaceTask {
     Injector injector = Guice.createInjector();
     final TwilioAppSettings twilioSettings = injector.getInstance(TwilioAppSettings.class);
 
-    Map<String, String> params = new HashMap<>();
     String workspaceName = workspaceConfig.getString("name");
-    params.put("FriendlyName", workspaceName);
-    params.put("EventCallbackUrl", workspaceConfig.getString("event_callback"));
+    Map<String, String> workspaceParams = new HashMap<>();
+    workspaceParams.put("FriendlyName", workspaceName);
+    workspaceParams.put("EventCallbackUrl", workspaceConfig.getString("event_callback"));
 
     try {
       WorkspaceFacade workspaceFacade = WorkspaceFacade
-        .create(twilioSettings.getTwilioTaskRouterClient(), params);
+        .create(twilioSettings.getTwilioTaskRouterClient(), workspaceParams);
 
       addWorkersToWorkspace(workspaceFacade, workspaceConfig);
       addTaskQueuesToWorkspace(workspaceFacade, workspaceConfig);
@@ -90,13 +90,15 @@ class CreateWorkspaceTask {
                                            JsonObject workspaceJsonConfig) {
     JsonArray workersJson = workspaceJsonConfig.getJsonArray("workers");
     Activity idleActivity = workspaceFacade.getIdleActivity();
+
     workersJson.getValuesAs(JsonObject.class).forEach(workerJson -> {
-      Map<String, String> newWorkerParams = new HashMap<>();
-      newWorkerParams.put("FriendlyName", workerJson.getString("name"));
-      newWorkerParams.put("ActivitySid", idleActivity.getSid());
-      newWorkerParams.put("Attributes", workerJson.getJsonObject("attributes").toString());
+      Map<String, String> workerParams = new HashMap<>();
+      workerParams.put("FriendlyName", workerJson.getString("name"));
+      workerParams.put("ActivitySid", idleActivity.getSid());
+      workerParams.put("Attributes", workerJson.getJsonObject("attributes").toString());
+
       try {
-        workspaceFacade.addWorker(newWorkerParams);
+        workspaceFacade.addWorker(workerParams);
       } catch (TaskRouterException e) {
         LOG.warning(e.getMessage());
       }
@@ -113,13 +115,14 @@ class CreateWorkspaceTask {
       new TaskRouterException("The activity for assignments 'Busy' was not found. "
         + "TaskQueues cannot be added."));
     taskQueuesJson.getValuesAs(JsonObject.class).forEach(taskQueueJson -> {
-      Map<String, String> newTaskQueueParams = new HashMap<>();
-      newTaskQueueParams.put("FriendlyName", taskQueueJson.getString("name"));
-      newTaskQueueParams.put("TargetWorkers", taskQueueJson.getString("targetWorkers"));
-      newTaskQueueParams.put("ReservationActivitySid", reservationActivity.getSid());
-      newTaskQueueParams.put("AssignmentActivitySid", assignmentActivity.getSid());
+      Map<String, String> taskQueueParams = new HashMap<>();
+      taskQueueParams.put("FriendlyName", taskQueueJson.getString("name"));
+      taskQueueParams.put("TargetWorkers", taskQueueJson.getString("targetWorkers"));
+      taskQueueParams.put("ReservationActivitySid", reservationActivity.getSid());
+      taskQueueParams.put("AssignmentActivitySid", assignmentActivity.getSid());
+
       try {
-        workspaceFacade.addTaskQueue(newTaskQueueParams);
+        workspaceFacade.addTaskQueue(taskQueueParams);
       } catch (TaskRouterException e) {
         LOG.warning(e.getMessage());
       }
@@ -132,14 +135,16 @@ class CreateWorkspaceTask {
     String workflowName = workflowJson.getString("name");
     return workspaceFacade.findWorkflowByName(workflowName)
       .orElseGet(() -> {
-        Map<String, String> newWorkflowParams = new HashMap<>();
-        newWorkflowParams.put("FriendlyName", workflowName);
-        newWorkflowParams.put("AssignmentCallbackUrl", workflowJson.getString("callback"));
-        newWorkflowParams.put("FallbackAssignmentCallbackUrl", workflowJson.getString("callback"));
-        newWorkflowParams.put("TaskReservationTimeout", workflowJson.getString("timeout"));
+        Map<String, String> workflowParams = new HashMap<>();
+        workflowParams.put("FriendlyName", workflowName);
+        workflowParams.put("AssignmentCallbackUrl", workflowJson.getString("callback"));
+        workflowParams.put("FallbackAssignmentCallbackUrl", workflowJson.getString("callback"));
+        workflowParams.put("TaskReservationTimeout", workflowJson.getString("timeout"));
+
         String workflowConfigJson = createWorkFlowJsonConfig(workspaceFacade, workflowJson);
-        newWorkflowParams.put("Configuration", workflowConfigJson);
-        return workspaceFacade.addWorkflow(newWorkflowParams);
+        workflowParams.put("Configuration", workflowConfigJson);
+
+        return workspaceFacade.addWorkflow(workflowParams);
       });
   }
 
@@ -148,19 +153,21 @@ class CreateWorkspaceTask {
                                                     TwilioAppSettings twilioSettings) {
     Activity idleActivity = workspaceFacade.getIdleActivity();
 
-    Properties workspaceProperties = new Properties();
-    workspaceProperties.put("account.sid", twilioSettings.getTwilioAccountSid());
-    workspaceProperties.put("auth.token", twilioSettings.getTwilioAuthToken());
-    workspaceProperties.put("workspace.sid", workspaceFacade.getSid());
-    workspaceProperties.put("workflow.sid", workflow.getSid());
-    workspaceProperties.put("postWorkActivity.sid", idleActivity.getSid());
-    workspaceProperties.put("email", twilioSettings.getEmail());
-    workspaceProperties.put("phoneNumber", twilioSettings.getPhoneNumber().toString());
+    Properties workspaceParams = new Properties();
+    workspaceParams.put("account.sid", twilioSettings.getTwilioAccountSid());
+    workspaceParams.put("auth.token", twilioSettings.getTwilioAuthToken());
+    workspaceParams.put("workspace.sid", workspaceFacade.getSid());
+    workspaceParams.put("workflow.sid", workflow.getSid());
+    workspaceParams.put("postWorkActivity.sid", idleActivity.getSid());
+    workspaceParams.put("email", twilioSettings.getEmail());
+    workspaceParams.put("phoneNumber", twilioSettings.getPhoneNumber().toString());
+
     File workspacePropertiesFile = new File(TwilioAppSettings.WORKSPACE_PROPERTIES_FILE_PATH);
+
     try {
-      Utils.saveProperties(workspaceProperties,
+      Utils.saveProperties(workspaceParams,
         workspacePropertiesFile,
-        "Properties for last created Twilio task router workspace");
+        "Properties for last created Twilio TaskRouter workspace");
     } catch (IOException e) {
       LOG.severe("Could not save workspace.properties with current configuration");
       exit(1);
@@ -175,7 +182,7 @@ class CreateWorkspaceTask {
     System.out.println(StringUtils.repeat("#", lineLength));
     System.out.println("The following variables were registered:");
     System.out.println("\n");
-    workspaceProperties.entrySet().stream().forEach(propertyEntry -> {
+    workspaceParams.entrySet().stream().forEach(propertyEntry -> {
       System.out.println(String.format("%s=%s", propertyEntry.getKey(), propertyEntry.getValue()));
     });
     System.out.println("\n");
@@ -184,6 +191,7 @@ class CreateWorkspaceTask {
 
   public static JsonObject createWorkspaceConfig(String[] args) {
     final String configFileName = "workspace.json";
+
     Optional<URL> url =
       Optional.ofNullable(CreateWorkspaceTask.class.getResource(File.separator + configFileName));
     return url.map(u -> {
@@ -191,6 +199,7 @@ class CreateWorkspaceTask {
         File workspaceConfigJsonFile = new File(u.toURI());
         String jsonContent = Utils.readFileContent(workspaceConfigJsonFile);
         String parsedContent = parseWorkspaceJsonContent(jsonContent, args);
+
         try (JsonReader jsonReader = Json.createReader(new StringReader(parsedContent))) {
           return jsonReader.readObject();
         }
@@ -205,14 +214,15 @@ class CreateWorkspaceTask {
       () -> new TaskRouterException("There's no valid configuration in " + configFileName));
   }
 
-  private static String parseWorkspaceJsonContent(final String unParsedContent,
+  private static String parseWorkspaceJsonContent(final String unparsedContent,
                                                   final String... args) {
     Map<String, String> values = new HashMap<>();
     values.put("host", args[0]);
     values.put("bob_number", args[1]);
     values.put("alice_number", args[2]);
+
     StrSubstitutor strSubstitutor = new StrSubstitutor(values, "%(", ")s");
-    return strSubstitutor.replace(unParsedContent);
+    return strSubstitutor.replace(unparsedContent);
   }
 
   public static String createWorkFlowJsonConfig(WorkspaceFacade workspaceFacade,
@@ -229,10 +239,13 @@ class CreateWorkspaceTask {
           String ruleQueueName = ruleJson.getString("targetTaskQueue");
           TaskQueue ruleQueue = workspaceFacade.findTaskQueueByName(ruleQueueName).orElseThrow(
             () -> new TaskRouterException(String.format("%s queue not found", ruleQueueName)));
+
           WorkflowRuleTarget queueRuleTarget = new WorkflowRuleTarget(ruleQueue.getSid());
           queueRuleTarget.setPriority(5);
           queueRuleTarget.setTimeout(30);
+
           List<WorkflowRuleTarget> ruleTargets = Arrays.asList(queueRuleTarget, defaultRuleTarget);
+
           return new WorkflowRule(ruleJson.getString("expression"), ruleTargets);
         }).collect(Collectors.toList());
 

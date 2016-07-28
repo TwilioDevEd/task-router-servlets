@@ -8,7 +8,7 @@
 
 Use Twilio to provide your user with multiple options through phone calls, so
 they can be assisted by an agent specialized in the chosen topic. This is
-basically a call center created with the Task Router API of Twilio. This example
+basically a call center created with the TaskRouter API of Twilio. This example
 uses a SQLite database to log phone calls which were not assisted.
 
 [Read the full tutorial here](//www.twilio.com/docs/tutorials/walkthrough/task-router/java/servlets)
@@ -30,7 +30,7 @@ uses a SQLite database to log phone calls which were not assisted.
   $ git clone git@github.com:TwilioDevEd/task-router-servlets.git
   $ cd task-router-servlets
   ```
-  
+
 1. Copy the sample configuration file and edit it to match your configuration.
 
   ```bash
