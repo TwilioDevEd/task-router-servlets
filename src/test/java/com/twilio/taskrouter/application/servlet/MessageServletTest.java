@@ -2,7 +2,6 @@ package com.twilio.taskrouter.application.servlet;
 
 import com.twilio.sdk.resource.instance.taskrouter.Activity;
 import com.twilio.sdk.resource.instance.taskrouter.Worker;
-import com.twilio.taskrouter.domain.common.TwilioAppSettings;
 import com.twilio.taskrouter.domain.model.WorkspaceFacade;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,9 +33,6 @@ public class MessageServletTest {
 
   @Mock
   private HttpServletResponse responseMock;
-
-  @Mock
-  private TwilioAppSettings twilioAppSettingsMock;
 
   @Mock
   private WorkspaceFacade workspaceFacadeMock;

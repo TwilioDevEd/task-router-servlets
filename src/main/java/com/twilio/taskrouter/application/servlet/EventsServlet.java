@@ -31,10 +31,10 @@ import java.util.logging.Logger;
 @Singleton
 public class EventsServlet extends HttpServlet {
 
-  protected static final String LEAVE_MSG = "Sorry, All agents are busy. Please leave a message. "
+  private static final String LEAVE_MSG = "Sorry, All agents are busy. Please leave a message. "
     + "We will call you as soon as possible";
 
-  protected static final String OFFLINE_MSG = "Your status has changed to Offline. "
+  private static final String OFFLINE_MSG = "Your status has changed to Offline. "
     + "Reply with \"On\" to get back Online";
 
   private static final Logger LOG = Logger.getLogger(EventsServlet.class.getName());
@@ -74,18 +74,20 @@ public class EventsServlet extends HttpServlet {
       });
   }
 
-  protected Optional<JsonObject> parseAttributes(String parameter, HttpServletRequest request) {
+  private Optional<JsonObject> parseAttributes(String parameter, HttpServletRequest request) {
     return Optional.ofNullable(request.getParameter(parameter))
       .map(jsonRequest -> Json.createReader(new StringReader(jsonRequest)).readObject());
   }
 
   @Transactional
-  protected void addMissingCallAndLeaveMessage(JsonObject taskAttributesJson) {
+  private void addMissingCallAndLeaveMessage(JsonObject taskAttributesJson) {
     String phoneNumber = taskAttributesJson.getString("from");
     String selectedProduct = taskAttributesJson.getString("selected_product");
+
     MissedCall missedCall = new MissedCall(phoneNumber, selectedProduct);
     missedCallRepository.add(missedCall);
     LOG.info("Added Missing Call: " + missedCall);
+
     String callSid = taskAttributesJson.getString("call_sid");
     try {
       twilioSettings.redirectToVoiceMail(callSid, LEAVE_MSG);
@@ -95,7 +97,7 @@ public class EventsServlet extends HttpServlet {
     }
   }
 
-  protected void notifyOfflineStatusToWorker(JsonObject workerAttributesJson) {
+  private void notifyOfflineStatusToWorker(JsonObject workerAttributesJson) {
     Account account = twilioSettings.getTwilioRestClient().getAccount();
     String workerPhone = workerAttributesJson.getString("contact_uri");
 
@@ -103,6 +105,7 @@ public class EventsServlet extends HttpServlet {
     params.add(new BasicNameValuePair("To", workerPhone));
     params.add(new BasicNameValuePair("From", twilioSettings.getPhoneNumber().toString()));
     params.add(new BasicNameValuePair("Body", OFFLINE_MSG));
+
     try {
       account.getMessageFactory().create(params);
     } catch (TwilioRestException e) {

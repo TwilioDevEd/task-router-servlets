@@ -47,6 +47,7 @@ public class WorkspaceFacade {
       });
     try {
       Workspace workspace = twilioTaskRouterClient.createWorkspace(params);
+
       return new WorkspaceFacade(twilioTaskRouterClient, workspace);
     } catch (TwilioRestException e) {
       throw new TaskRouterException(String.format("Error creating new workspace '%s': %s",
@@ -69,30 +70,29 @@ public class WorkspaceFacade {
     return workspace.getSid();
   }
 
-  public Worker addWorker(Map<String, String> newWorkerParams) {
+  public Worker addWorker(Map<String, String> workerParams) {
     try {
-
-      return workspace.createWorker(newWorkerParams);
+      return workspace.createWorker(workerParams);
     } catch (TwilioRestException e) {
       throw new TaskRouterException(String.format(
         "Error while adding the worker '%s' to workspace: %s",
-        newWorkerParams.get("FriendlyName"), e.getMessage()));
+        workerParams.get("FriendlyName"), e.getMessage()));
     }
   }
 
-  public void addTaskQueue(Map<String, String> newTaskQueueParams) {
+  public void addTaskQueue(Map<String, String> taskQueueParams) {
     try {
-      taskRouterClient.createTaskQueue(workspace.getSid(), newTaskQueueParams);
+      taskRouterClient.createTaskQueue(workspace.getSid(), taskQueueParams);
     } catch (TwilioRestException e) {
       throw new TaskRouterException(String.format(
         "Error while adding the task queue '%s' to workspace: %s",
-        newTaskQueueParams.get("FriendlyName"), e.getMessage()));
+        taskQueueParams.get("FriendlyName"), e.getMessage()));
     }
   }
 
-  public Workflow addWorkflow(Map<String, String> newWorkflowParams) {
+  public Workflow addWorkflow(Map<String, String> workflowParams) {
     try {
-      return taskRouterClient.createWorkflow(workspace.getSid(), newWorkflowParams);
+      return taskRouterClient.createWorkflow(workspace.getSid(), workflowParams);
     } catch (TwilioRestException e) {
       throw new TaskRouterException(String.format(
         "Error while adding workflow '%s' to workspace: %s",
@@ -138,7 +138,6 @@ public class WorkspaceFacade {
   public Activity getIdleActivity() {
     if (idleActivity == null) {
       idleActivity = findActivityByName("Idle").get();
-
     }
     return idleActivity;
   }

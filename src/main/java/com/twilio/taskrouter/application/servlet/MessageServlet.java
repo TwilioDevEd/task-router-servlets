@@ -7,7 +7,6 @@ import com.twilio.sdk.resource.instance.taskrouter.Worker;
 import com.twilio.sdk.verbs.Sms;
 import com.twilio.sdk.verbs.TwiMLException;
 import com.twilio.sdk.verbs.TwiMLResponse;
-import com.twilio.taskrouter.domain.common.TwilioAppSettings;
 import com.twilio.taskrouter.domain.error.TaskRouterException;
 import com.twilio.taskrouter.domain.model.WorkspaceFacade;
 
@@ -30,13 +29,10 @@ public class MessageServlet extends HttpServlet {
 
   private static final Logger LOG = Logger.getLogger(MessageServlet.class.getName());
 
-  private final TwilioAppSettings twilioAppSettings;
-
   private final WorkspaceFacade workspace;
 
   @Inject
-  public MessageServlet(TwilioAppSettings twilioAppSettings, WorkspaceFacade workspace) {
-    this.twilioAppSettings = twilioAppSettings;
+  public MessageServlet(WorkspaceFacade workspace) {
     this.workspace = workspace;
   }
 
@@ -45,31 +41,35 @@ public class MessageServlet extends HttpServlet {
     throws ServletException, IOException {
     final TwiMLResponse twimlResponse = new TwiMLResponse();
     final String newStatus = getNewWorkerStatus(req);
-    String workerPhone = req.getParameter("From");
+    final String workerPhone = req.getParameter("From");
+
     try {
       Sms responseSms = workspace.findWorkerByPhone(workerPhone).map(worker -> {
         updateWorkerStatus(worker, newStatus);
+
         return new Sms(String.format("Your status has changed to %s", newStatus));
       }).orElseGet(() -> new Sms("You are not a valid worker"));
       twimlResponse.append(responseSms);
     } catch (TwiMLException e) {
       LOG.log(Level.SEVERE, "Error while providing answer to a workers' sms", e);
     }
+
     resp.setContentType("application/xml");
     resp.getWriter().print(twimlResponse.toXML());
   }
 
-  public String getNewWorkerStatus(HttpServletRequest request) {
+  private String getNewWorkerStatus(HttpServletRequest request) {
     return Optional.ofNullable(request.getParameter("Body"))
       .filter(x -> x.equals("off")).map((first) -> "Offline").orElse("Idle");
   }
 
-  public void updateWorkerStatus(Worker worker, String activityFriendlyName) {
+  private void updateWorkerStatus(Worker worker, String activityFriendlyName) {
     Activity activity = workspace.findActivityByName(activityFriendlyName).orElseThrow(() ->
       new TaskRouterException(
         String.format("The activity '%s' doesn't exist in the workspace", activityFriendlyName)
       )
     );
+
     try {
       worker.updateActivity(activity.getSid());
     } catch (TwilioRestException e) {
@@ -78,5 +78,4 @@ public class MessageServlet extends HttpServlet {
       ));
     }
   }
-
 }

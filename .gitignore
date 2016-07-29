@@ -4,8 +4,8 @@
 build/
 target/
 *.iml
-*.ipr
-*.iws
+.ipr
+.iws
 *.sqlite
 .env
 out/

@@ -14,7 +14,6 @@ import javax.json.JsonObject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import static com.twilio.taskrouter.application.servlet.EventsServlet.LEAVE_MSG;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.never;
@@ -24,6 +23,9 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EventsServletTest {
+
+  private static final String LEAVE_MSG = "Sorry, All agents are busy. Please leave a message. "
+    + "We will call you as soon as possible";
 
   @Mock
   private HttpServletRequest requestMock;
@@ -47,7 +49,7 @@ public class EventsServletTest {
   }
 
   @Test
-  public void testDoPost() throws Exception {
+  public void shouldLeaveMessageAndAddMissedCall() throws Exception {
     when(requestMock.getParameter(anyString())).thenReturn("task.canceled");
     JsonObject taskAttribs = Json.createObjectBuilder()
       .add("from", "from-content")

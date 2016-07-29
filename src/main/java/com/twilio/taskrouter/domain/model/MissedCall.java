@@ -27,7 +27,11 @@ public final class MissedCall {
 
   private Date created;
 
-  public MissedCall() {
+  /**
+   * For JPA purposes is package protected
+   * Avoids initialization by this constructor
+   */
+  protected MissedCall() {
   }
 
   public MissedCall(String phoneNumber, String selectedProduct) {

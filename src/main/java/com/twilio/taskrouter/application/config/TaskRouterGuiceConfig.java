@@ -6,7 +6,7 @@ import com.twilio.taskrouter.domain.model.WorkspaceFacade;
 import java.util.logging.Logger;
 
 /**
- * Provide the resources related to task router
+ * Provide the resources related to TaskRouter
  */
 public class TaskRouterGuiceConfig extends AbstractModule {
 
