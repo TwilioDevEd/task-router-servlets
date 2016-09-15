@@ -255,7 +255,8 @@ class CreateWorkspaceTask {
           return new WorkflowRule.Builder(ruleJson.getString("expression"), ruleTargets).build();
         }).collect(Collectors.toList());
 
-      com.twilio.taskrouter.Workflow config = new com.twilio.taskrouter.Workflow(rules, defaultRuleTarget);
+      com.twilio.taskrouter.Workflow config;
+      config = new com.twilio.taskrouter.Workflow(rules, defaultRuleTarget);
       return config.toJson();
     } catch (Exception ex) {
       throw new TaskRouterException("Error while creating workflow json configuration", ex);

@@ -53,7 +53,8 @@ public class MessageServletTest {
       .thenReturn(phoneToWorkerMock);
 
     Constructor<Activity> idleConstructor = Activity.class.getDeclaredConstructor(
-      String.class, Boolean.class, String.class, String.class, String.class, String.class, String.class
+      String.class, Boolean.class, String.class, String.class,
+      String.class, String.class, String.class
     );
     idleConstructor.setAccessible(true);
     Activity idleActivity = idleConstructor.newInstance(
@@ -64,7 +65,8 @@ public class MessageServletTest {
       .thenReturn(Optional.of(idleActivity));
 
     Constructor<Activity> offlineActivityConstructor = Activity.class.getDeclaredConstructor(
-      String.class, Boolean.class, String.class, String.class, String.class, String.class, String.class
+      String.class, Boolean.class, String.class, String.class,
+      String.class, String.class, String.class
     );
     offlineActivityConstructor.setAccessible(true);
     Activity offlineActivity = offlineActivityConstructor.newInstance(

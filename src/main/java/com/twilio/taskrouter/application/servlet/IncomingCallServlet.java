@@ -34,7 +34,10 @@ public class IncomingCallServlet extends HttpServlet {
           .numDigits(1)
           .timeout(10)
           .method(Method.POST)
-          .say(new Say.Builder("For Programmable SMS, press one. For Voice, press any other key.").build())
+          .say(new Say
+            .Builder("For Programmable SMS, press one. For Voice, press any other key.")
+            .build()
+          )
           .build()
         ).build();
 
