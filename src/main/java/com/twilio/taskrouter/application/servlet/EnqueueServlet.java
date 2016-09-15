@@ -17,6 +17,8 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static java.lang.String.format;
+
 /**
  * Selects a product by creating a Task on the TaskRouter Workflow
  */
@@ -33,10 +35,13 @@ public class EnqueueServlet extends HttpServlet {
   }
 
   @Override
-  public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+  public void doPost(HttpServletRequest req, HttpServletResponse resp)
+    throws ServletException, IOException {
 
     String selectedProduct = getSelectedProduct(req);
-    Task task = new Task.Builder().data(String.format("{\"selected_product\": \"%s\"}", selectedProduct)).build();
+    Task task = new Task.Builder()
+      .data(format("{\"selected_product\": \"%s\"}", selectedProduct))
+      .build();
 
     EnqueueTask enqueueTask = new EnqueueTask.Builder(task).workflowSid(workflowSid).build();
 
