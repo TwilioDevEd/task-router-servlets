@@ -11,4 +11,4 @@ target/
 out/
 /.nb-gradle/
 workspace.properties
-
+classes/

@@ -2,12 +2,11 @@ package com.twilio.taskrouter.application;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.twilio.sdk.resource.instance.taskrouter.Activity;
-import com.twilio.sdk.resource.instance.taskrouter.TaskQueue;
-import com.twilio.sdk.resource.instance.taskrouter.Workflow;
-import com.twilio.sdk.taskrouter.WorkflowConfiguration;
-import com.twilio.sdk.taskrouter.WorkflowRule;
-import com.twilio.sdk.taskrouter.WorkflowRuleTarget;
+import com.twilio.rest.taskrouter.v1.workspace.Activity;
+import com.twilio.rest.taskrouter.v1.workspace.TaskQueue;
+import com.twilio.rest.taskrouter.v1.workspace.Workflow;
+import com.twilio.taskrouter.WorkflowRule;
+import com.twilio.taskrouter.WorkflowRuleTarget;
 import com.twilio.taskrouter.domain.common.TwilioAppSettings;
 import com.twilio.taskrouter.domain.common.Utils;
 import com.twilio.taskrouter.domain.error.TaskRouterException;
@@ -34,6 +33,9 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static java.lang.System.exit;
+
+//import org.apache.commons.lang3.StringUtils;
+//import org.apache.commons.lang3.text.StrSubstitutor;
 
 /**
  * Creates a workspace
@@ -73,7 +75,7 @@ class CreateWorkspaceTask {
 
     try {
       WorkspaceFacade workspaceFacade = WorkspaceFacade
-        .create(twilioSettings.getTwilioTaskRouterClient(), workspaceParams);
+        .create(twilioSettings.getTwilioRestClient(), workspaceParams);
 
       addWorkersToWorkspace(workspaceFacade, workspaceConfig);
       addTaskQueuesToWorkspace(workspaceFacade, workspaceConfig);
@@ -231,8 +233,11 @@ class CreateWorkspaceTask {
       JsonArray routingConfigRules = workflowJson.getJsonArray("routingConfiguration");
       TaskQueue defaultQueue = workspaceFacade.findTaskQueueByName("Default")
         .orElseThrow(() -> new TaskRouterException("Default queue not found"));
-      WorkflowRuleTarget defaultRuleTarget
-        = new WorkflowRuleTarget(defaultQueue.getSid(), "1=1", 1, 30);
+      WorkflowRuleTarget defaultRuleTarget = new WorkflowRuleTarget.Builder(defaultQueue.getSid())
+        .expression("1=1")
+        .priority(1)
+        .timeout(30)
+        .build();
 
       List<WorkflowRule> rules = routingConfigRules.getValuesAs(JsonObject.class).stream()
         .map(ruleJson -> {
@@ -240,18 +245,18 @@ class CreateWorkspaceTask {
           TaskQueue ruleQueue = workspaceFacade.findTaskQueueByName(ruleQueueName).orElseThrow(
             () -> new TaskRouterException(String.format("%s queue not found", ruleQueueName)));
 
-          WorkflowRuleTarget queueRuleTarget = new WorkflowRuleTarget(ruleQueue.getSid());
-          queueRuleTarget.setPriority(5);
-          queueRuleTarget.setTimeout(30);
+          WorkflowRuleTarget queueRuleTarget = new WorkflowRuleTarget.Builder(ruleQueue.getSid())
+            .priority(5)
+            .timeout(30)
+            .build();
 
           List<WorkflowRuleTarget> ruleTargets = Arrays.asList(queueRuleTarget, defaultRuleTarget);
 
-          return new WorkflowRule(ruleJson.getString("expression"), ruleTargets);
+          return new WorkflowRule.Builder(ruleJson.getString("expression"), ruleTargets).build();
         }).collect(Collectors.toList());
 
-      WorkflowConfiguration config = new WorkflowConfiguration(rules, defaultRuleTarget);
-
-      return config.toJSON();
+      com.twilio.taskrouter.Workflow config = new com.twilio.taskrouter.Workflow(rules, defaultRuleTarget);
+      return config.toJson();
     } catch (Exception ex) {
       throw new TaskRouterException("Error while creating workflow json configuration", ex);
     }

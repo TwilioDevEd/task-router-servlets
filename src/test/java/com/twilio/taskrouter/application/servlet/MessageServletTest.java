@@ -1,22 +1,23 @@
 package com.twilio.taskrouter.application.servlet;
 
-import com.twilio.sdk.resource.instance.taskrouter.Activity;
-import com.twilio.sdk.resource.instance.taskrouter.Worker;
+import com.twilio.rest.taskrouter.v1.workspace.Activity;
+import com.twilio.rest.taskrouter.v1.workspace.Worker;
 import com.twilio.taskrouter.domain.model.WorkspaceFacade;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
+import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -37,11 +38,11 @@ public class MessageServletTest {
   @Mock
   private WorkspaceFacade workspaceFacadeMock;
 
-  @InjectMocks
   private MessageServlet messageServlet;
 
   @Before
   public void setUp() throws Exception {
+    this.messageServlet = new MessageServlet(workspaceFacadeMock);
     when(responseMock.getWriter()).thenReturn(mock(PrintWriter.class));
 
     Worker workerMock = mock(Worker.class);
@@ -51,13 +52,25 @@ public class MessageServletTest {
     when(workspaceFacadeMock.getPhoneToWorker())
       .thenReturn(phoneToWorkerMock);
 
-    Activity idleActivity = mock(Activity.class);
-    when(idleActivity.getSid()).thenReturn("WACIDLEXXXX");
+    Constructor<Activity> idleConstructor = Activity.class.getDeclaredConstructor(
+      String.class, Boolean.class, String.class, String.class, String.class, String.class, String.class
+    );
+    idleConstructor.setAccessible(true);
+    Activity idleActivity = idleConstructor.newInstance(
+      "WACIDLEXXXX", true, "2010-01-01", "2010-01-01", "idle", "WACIDLEXXXX", "WACIDLEXXXX"
+    );
+
     when(workspaceFacadeMock.findActivityByName("Idle"))
       .thenReturn(Optional.of(idleActivity));
 
-    Activity offlineActivity = mock(Activity.class);
-    when(offlineActivity.getSid()).thenReturn("WACOFFLINEXXXX");
+    Constructor<Activity> offlineActivityConstructor = Activity.class.getDeclaredConstructor(
+      String.class, Boolean.class, String.class, String.class, String.class, String.class, String.class
+    );
+    offlineActivityConstructor.setAccessible(true);
+    Activity offlineActivity = offlineActivityConstructor.newInstance(
+      "WACOFFLINEXXXX", true, "2010-01-01", "2010-01-01", "off", "WACOFFLINEXXXX", "WACOFFLINEXXXX"
+    );
+
     when(workspaceFacadeMock.findActivityByName("Offline"))
       .thenReturn(Optional.of(offlineActivity));
 
@@ -65,31 +78,13 @@ public class MessageServletTest {
   }
 
   @Test
-  public void shouldChangeToIdleStatus() throws Exception {
+  public void shouldUpdateWorkerStatus() throws Exception {
     when(requestMock.getParameter("Body")).thenReturn("on");
     when(requestMock.getParameter("From")).thenReturn(WORKER_PHONE_MOCK);
 
     messageServlet.doPost(requestMock, responseMock);
 
-    verify(workspaceFacadeMock, times(1)).findActivityByName("Idle");
-
-    verify(responseMock, times(1)).setContentType("application/xml");
-    verify(responseMock.getWriter(), times(1))
-      .print("<Response><Sms>Your status has changed to Idle</Sms></Response>");
-  }
-
-  @Test
-  public void shouldChangeToOfflineStatus() throws Exception {
-    when(requestMock.getParameter("Body")).thenReturn("off");
-    when(requestMock.getParameter("From")).thenReturn(WORKER_PHONE_MOCK);
-
-    messageServlet.doPost(requestMock, responseMock);
-
-    verify(workspaceFacadeMock, times(1)).findActivityByName("Offline");
-
-    verify(responseMock, times(1)).setContentType("application/xml");
-    verify(responseMock.getWriter(), times(1))
-      .print("<Response><Sms>Your status has changed to Offline</Sms></Response>");
+    verify(workspaceFacadeMock, times(1)).updateWorkerStatus(any(Worker.class), anyString());
   }
 
   @Test
