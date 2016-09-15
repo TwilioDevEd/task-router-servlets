@@ -4,7 +4,6 @@ import com.twilio.taskrouter.domain.common.TwilioAppSettings;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.w3c.dom.Document;
@@ -35,12 +34,12 @@ public class EnqueueServletTest {
     @Mock
     private TwilioAppSettings twilioAppSettingsMock;
 
-    @InjectMocks
     private EnqueueServlet enqueueServlet;
 
     @Before
     public void setUp() {
-        when(twilioAppSettingsMock.getWorkflowSid()).thenReturn("WWfXXXXXXXXXXXX");
+      when(twilioAppSettingsMock.getWorkflowSid()).thenReturn("WWfXXXXXXXXXXXX");
+      this.enqueueServlet = new EnqueueServlet(twilioAppSettingsMock);
     }
 
     @Test
@@ -63,7 +62,6 @@ public class EnqueueServletTest {
 
         printWriter.flush();
         String content = new String(output.toByteArray(), "UTF-8");
-
         Document document = XMLTestHelper.createDocumentFromXml(content);
         Node response = document.getElementsByTagName("Response").item(0);
 

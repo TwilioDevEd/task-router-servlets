@@ -1,10 +1,10 @@
 package com.twilio.taskrouter.application.servlet;
 
-import com.twilio.sdk.verbs.Enqueue;
-import com.twilio.sdk.verbs.Task;
-import com.twilio.sdk.verbs.TwiMLException;
-import com.twilio.sdk.verbs.TwiMLResponse;
 import com.twilio.taskrouter.domain.common.TwilioAppSettings;
+import com.twilio.twiml.EnqueueTask;
+import com.twilio.twiml.Task;
+import com.twilio.twiml.TwiMLException;
+import com.twilio.twiml.VoiceResponse;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -16,6 +16,8 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static java.lang.String.format;
 
 /**
  * Selects a product by creating a Task on the TaskRouter Workflow
@@ -33,23 +35,24 @@ public class EnqueueServlet extends HttpServlet {
   }
 
   @Override
-  public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
-    IOException {
+  public void doPost(HttpServletRequest req, HttpServletResponse resp)
+    throws ServletException, IOException {
+
     String selectedProduct = getSelectedProduct(req);
+    Task task = new Task.Builder()
+      .data(format("{\"selected_product\": \"%s\"}", selectedProduct))
+      .build();
 
-    final TwiMLResponse twimlResponse = new TwiMLResponse();
-    final Enqueue enqueue = new Enqueue();
-    enqueue.setWorkflowSid(workflowSid);
+    EnqueueTask enqueueTask = new EnqueueTask.Builder(task).workflowSid(workflowSid).build();
 
-    try {
-      enqueue.append(new Task(String.format("{\"selected_product\": \"%s\"}", selectedProduct)));
-      twimlResponse.append(enqueue);
-    } catch (final TwiMLException e) {
-      LOG.log(Level.SEVERE, "Error while appending enqueue task to the response", e);
-    }
-
+    VoiceResponse voiceResponse = new VoiceResponse.Builder().enqueue(enqueueTask).build();
     resp.setContentType("application/xml");
-    resp.getWriter().print(twimlResponse.toXML());
+    try {
+      resp.getWriter().print(voiceResponse.toXml());
+    } catch (TwiMLException e) {
+      LOG.log(Level.SEVERE, e.getMessage(), e);
+      throw new RuntimeException(e);
+    }
   }
 
   private String getSelectedProduct(HttpServletRequest request) {

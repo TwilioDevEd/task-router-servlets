@@ -1,25 +1,36 @@
 package com.twilio.taskrouter.domain.model;
 
-import com.twilio.sdk.TwilioRestException;
-import com.twilio.sdk.TwilioTaskRouterClient;
-import com.twilio.sdk.resource.instance.taskrouter.Activity;
-import com.twilio.sdk.resource.instance.taskrouter.TaskQueue;
-import com.twilio.sdk.resource.instance.taskrouter.Worker;
-import com.twilio.sdk.resource.instance.taskrouter.Workflow;
-import com.twilio.sdk.resource.instance.taskrouter.Workspace;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.twilio.base.ResourceSet;
+import com.twilio.http.TwilioRestClient;
+import com.twilio.rest.taskrouter.v1.Workspace;
+import com.twilio.rest.taskrouter.v1.WorkspaceCreator;
+import com.twilio.rest.taskrouter.v1.WorkspaceDeleter;
+import com.twilio.rest.taskrouter.v1.WorkspaceFetcher;
+import com.twilio.rest.taskrouter.v1.WorkspaceReader;
+import com.twilio.rest.taskrouter.v1.workspace.Activity;
+import com.twilio.rest.taskrouter.v1.workspace.ActivityReader;
+import com.twilio.rest.taskrouter.v1.workspace.TaskQueue;
+import com.twilio.rest.taskrouter.v1.workspace.TaskQueueCreator;
+import com.twilio.rest.taskrouter.v1.workspace.TaskQueueReader;
+import com.twilio.rest.taskrouter.v1.workspace.Worker;
+import com.twilio.rest.taskrouter.v1.workspace.WorkerCreator;
+import com.twilio.rest.taskrouter.v1.workspace.WorkerReader;
+import com.twilio.rest.taskrouter.v1.workspace.WorkerUpdater;
+import com.twilio.rest.taskrouter.v1.workspace.Workflow;
+import com.twilio.rest.taskrouter.v1.workspace.WorkflowCreator;
+import com.twilio.rest.taskrouter.v1.workspace.WorkflowReader;
 import com.twilio.taskrouter.domain.error.TaskRouterException;
-import org.json.simple.parser.ParseException;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.StreamSupport;
 
-/**
- * Facade pattern for {@link com.twilio.sdk.resource.instance.taskrouter.Workspace}
- */
 public class WorkspaceFacade {
 
-  private final TwilioTaskRouterClient taskRouterClient;
+  private final TwilioRestClient client;
 
   private final Workspace workspace;
 
@@ -27,39 +38,34 @@ public class WorkspaceFacade {
 
   private Map<String, Worker> phoneToWorker;
 
-  public WorkspaceFacade(TwilioTaskRouterClient taskRouterClient, Workspace workspace) {
-    this.taskRouterClient = taskRouterClient;
+  public WorkspaceFacade(TwilioRestClient client, Workspace workspace) {
+    this.client = client;
     this.workspace = workspace;
   }
 
-  public static WorkspaceFacade create(TwilioTaskRouterClient twilioTaskRouterClient,
+  public static WorkspaceFacade create(TwilioRestClient client,
                                        Map<String, String> params) {
     String workspaceName = params.get("FriendlyName");
-    twilioTaskRouterClient.getWorkspaces().getPageData().stream()
-      .filter(workspace -> workspace.getFriendlyName().equals(workspaceName)).findFirst()
-      .ifPresent(workspace -> {
-        try {
-          twilioTaskRouterClient.deleteWorkspace(workspace.getSid());
-        } catch (TwilioRestException e) {
-          throw new TaskRouterException(String.format("Error deleting existing workspace '%s': %s",
-            workspaceName, e.getMessage()));
-        }
-      });
-    try {
-      Workspace workspace = twilioTaskRouterClient.createWorkspace(params);
+    String eventCallbackUrl = params.get("EventCallbackUrl");
 
-      return new WorkspaceFacade(twilioTaskRouterClient, workspace);
-    } catch (TwilioRestException e) {
-      throw new TaskRouterException(String.format("Error creating new workspace '%s': %s",
-        workspaceName, e.getMessage()));
-    }
+    ResourceSet<Workspace> execute = new WorkspaceReader()
+      .byFriendlyName(workspaceName)
+      .execute(client);
+    StreamSupport.stream(execute.spliterator(), false)
+      .findFirst()
+      .ifPresent(workspace -> new WorkspaceDeleter(workspace.getSid()).execute(client));
+
+    Workspace workspace = new WorkspaceCreator(workspaceName)
+      .setEventCallbackUrl(eventCallbackUrl)
+      .execute(client);
+
+    return new WorkspaceFacade(client, workspace);
   }
 
-  public static Optional<WorkspaceFacade> findBySid(String workspaceSid, TwilioTaskRouterClient
-    twilioTaskRouterClient) {
-    return twilioTaskRouterClient.getWorkspaces().getPageData().stream()
-      .filter(workspace -> workspace.getSid().equals(workspaceSid)).findFirst()
-      .map(workspace -> new WorkspaceFacade(twilioTaskRouterClient, workspace));
+  public static Optional<WorkspaceFacade> findBySid(String workspaceSid,
+                                                    TwilioRestClient client) {
+    Workspace workspace = new WorkspaceFetcher(workspaceSid).execute(client);
+    return Optional.of(new WorkspaceFacade(client, workspace));
   }
 
   public String getFriendlyName() {
@@ -71,48 +77,49 @@ public class WorkspaceFacade {
   }
 
   public Worker addWorker(Map<String, String> workerParams) {
-    try {
-      return workspace.createWorker(workerParams);
-    } catch (TwilioRestException e) {
-      throw new TaskRouterException(String.format(
-        "Error while adding the worker '%s' to workspace: %s",
-        workerParams.get("FriendlyName"), e.getMessage()));
-    }
+    return new WorkerCreator(workspace.getSid(), workerParams.get("FriendlyName"))
+      .setActivitySid(workerParams.get("ActivitySid"))
+      .setAttributes(workerParams.get("Attributes"))
+      .execute(client);
   }
 
   public void addTaskQueue(Map<String, String> taskQueueParams) {
-    try {
-      taskRouterClient.createTaskQueue(workspace.getSid(), taskQueueParams);
-    } catch (TwilioRestException e) {
-      throw new TaskRouterException(String.format(
-        "Error while adding the task queue '%s' to workspace: %s",
-        taskQueueParams.get("FriendlyName"), e.getMessage()));
-    }
+    new TaskQueueCreator(this.workspace.getSid(),
+      taskQueueParams.get("FriendlyName"),
+      taskQueueParams.get("ReservationActivitySid"),
+      taskQueueParams.get("AssignmentActivitySid"))
+      .execute(client);
   }
 
   public Workflow addWorkflow(Map<String, String> workflowParams) {
-    try {
-      return taskRouterClient.createWorkflow(workspace.getSid(), workflowParams);
-    } catch (TwilioRestException e) {
-      throw new TaskRouterException(String.format(
-        "Error while adding workflow '%s' to workspace: %s",
-        workspace.getFriendlyName(), e.getMessage()));
-    }
+    return new WorkflowCreator(workspace.getSid(),
+      workflowParams.get("FriendlyName"),
+      workflowParams.get("Configuration"))
+      .setAssignmentCallbackUrl(workflowParams.get("AssignmentCallbackUrl"))
+      .setFallbackAssignmentCallbackUrl(workflowParams.get("FallbackAssignmentCallbackUrl"))
+      .setTaskReservationTimeout(Integer.valueOf(workflowParams.get("TaskReservationTimeout")))
+      .execute(client);
   }
 
   public Optional<Activity> findActivityByName(String activityName) {
-    return workspace.getActivities().getPageData().stream()
-      .filter(activity -> activity.getFriendlyName().equals(activityName)).findFirst();
+    return StreamSupport.stream(new ActivityReader(this.workspace.getSid())
+      .byFriendlyName(activityName)
+      .execute(client).spliterator(), false
+    ).findFirst();
   }
 
   public Optional<TaskQueue> findTaskQueueByName(String queueName) {
-    return workspace.getTaskQueues().getPageData().stream()
-      .filter(task -> task.getFriendlyName().equals(queueName)).findFirst();
+    return StreamSupport.stream(new TaskQueueReader(this.workspace.getSid())
+      .byFriendlyName(queueName)
+      .execute(client).spliterator(), false
+    ).findFirst();
   }
 
   public Optional<Workflow> findWorkflowByName(String workflowName) {
-    return workspace.getWorkflows().getPageData().stream()
-      .filter(workflow -> workspace.getFriendlyName().equals(workflowName)).findFirst();
+    return StreamSupport.stream(new WorkflowReader(this.workspace.getSid())
+      .byFriendlyName(workflowName)
+      .execute(client).spliterator(), false
+    ).findFirst();
   }
 
   public Optional<Worker> findWorkerByPhone(String workerPhone) {
@@ -122,11 +129,14 @@ public class WorkspaceFacade {
   public Map<String, Worker> getPhoneToWorker() {
     if (phoneToWorker == null) {
       phoneToWorker = new HashMap<>();
-      workspace.getWorkers().getPageData().stream().forEach(worker -> {
+      StreamSupport.stream(
+        new WorkerReader(this.workspace.getSid()).execute(client).spliterator(), false
+      ).forEach(worker -> {
         try {
-          Map<String, Object> attributes = worker.parseAttributes();
+          HashMap<String, Object> attributes = new ObjectMapper()
+            .readValue(worker.getAttributes(), HashMap.class);
           phoneToWorker.put(attributes.get("contact_uri").toString(), worker);
-        } catch (ParseException e) {
+        } catch (IOException e) {
           throw new TaskRouterException(
             String.format("'%s' has a malformed json attributes", worker.getFriendlyName()));
         }
@@ -140,5 +150,17 @@ public class WorkspaceFacade {
       idleActivity = findActivityByName("Idle").get();
     }
     return idleActivity;
+  }
+
+  public void updateWorkerStatus(Worker worker, String activityFriendlyName) {
+    Activity activity = findActivityByName(activityFriendlyName).orElseThrow(() ->
+      new TaskRouterException(
+        String.format("The activity '%s' doesn't exist in the workspace", activityFriendlyName)
+      )
+    );
+
+    new WorkerUpdater(workspace.getSid(), worker.getSid())
+      .setActivitySid(activity.getSid())
+      .execute(client);
   }
 }

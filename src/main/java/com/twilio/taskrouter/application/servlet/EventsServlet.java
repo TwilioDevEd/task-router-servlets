@@ -1,14 +1,11 @@
 package com.twilio.taskrouter.application.servlet;
 
 import com.google.inject.persist.Transactional;
-import com.twilio.sdk.TwilioRestException;
-import com.twilio.sdk.resource.instance.Account;
+import com.twilio.rest.api.v2010.account.MessageCreator;
 import com.twilio.taskrouter.domain.common.TwilioAppSettings;
-import com.twilio.taskrouter.domain.error.TaskRouterException;
 import com.twilio.taskrouter.domain.model.MissedCall;
 import com.twilio.taskrouter.domain.repository.MissedCallRepository;
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
+import com.twilio.type.PhoneNumber;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -20,8 +17,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -89,30 +84,17 @@ public class EventsServlet extends HttpServlet {
     LOG.info("Added Missing Call: " + missedCall);
 
     String callSid = taskAttributesJson.getString("call_sid");
-    try {
-      twilioSettings.redirectToVoiceMail(callSid, LEAVE_MSG);
-    } catch (TwilioRestException e) {
-      LOG.warning(String.format("Error leaving message for the call '%s': %s",
-        callSid, e.getMessage()));
-    }
+    twilioSettings.redirectToVoiceMail(callSid, LEAVE_MSG);
   }
 
   private void notifyOfflineStatusToWorker(JsonObject workerAttributesJson) {
-    Account account = twilioSettings.getTwilioRestClient().getAccount();
     String workerPhone = workerAttributesJson.getString("contact_uri");
+    new MessageCreator(
+      new PhoneNumber(workerPhone),
+      new PhoneNumber(twilioSettings.getPhoneNumber().toString()),
+      OFFLINE_MSG
+    ).execute();
 
-    List<NameValuePair> params = new ArrayList<>();
-    params.add(new BasicNameValuePair("To", workerPhone));
-    params.add(new BasicNameValuePair("From", twilioSettings.getPhoneNumber().toString()));
-    params.add(new BasicNameValuePair("Body", OFFLINE_MSG));
-
-    try {
-      account.getMessageFactory().create(params);
-    } catch (TwilioRestException e) {
-      throw new TaskRouterException(
-        "Error while sending offline status notification to " + workerPhone,
-        e);
-    }
   }
 
 }
