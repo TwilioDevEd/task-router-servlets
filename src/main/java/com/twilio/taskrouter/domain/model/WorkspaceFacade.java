@@ -45,12 +45,17 @@ public class WorkspaceFacade {
 
   public static WorkspaceFacade create(TwilioRestClient twilioRestClient, Map<String, String> params) {
     String workspaceName = params.get("FriendlyName");
+    String eventCallbackUrl = params.get("EventCallbackUrl");
+
     ResourceSet<Workspace> execute = new WorkspaceReader().byFriendlyName(workspaceName).execute(twilioRestClient);
     StreamSupport.stream(execute.spliterator(), false)
       .findFirst()
       .ifPresent(workspace -> new WorkspaceDeleter(workspace.getSid()).execute(twilioRestClient));
 
-    Workspace workspace = new WorkspaceCreator(workspaceName).execute(twilioRestClient);
+    Workspace workspace = new WorkspaceCreator(workspaceName)
+      .setEventCallbackUrl(eventCallbackUrl)
+      .execute(twilioRestClient);
+
     return new WorkspaceFacade(twilioRestClient, workspace);
   }
 
