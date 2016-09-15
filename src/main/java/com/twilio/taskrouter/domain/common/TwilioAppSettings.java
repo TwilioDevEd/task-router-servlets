@@ -1,9 +1,11 @@
 package com.twilio.taskrouter.domain.common;
 
-import com.twilio.sdk.TwilioRestClient;
-import com.twilio.sdk.TwilioRestException;
-import com.twilio.sdk.TwilioTaskRouterClient;
-import com.twilio.sdk.resource.instance.Call;
+import com.twilio.Twilio;
+import com.twilio.http.HttpMethod;
+import com.twilio.http.TwilioRestClient;
+import com.twilio.rest.api.v2010.account.Call;
+import com.twilio.rest.api.v2010.account.CallFetcher;
+import com.twilio.rest.api.v2010.account.CallUpdater;
 import com.twilio.taskrouter.domain.error.TaskRouterException;
 import com.twilio.taskrouter.domain.model.PhoneNumber;
 import org.apache.http.NameValuePair;
@@ -20,6 +22,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+
 /**
  * Twilio settings and helper functions for this app
  */
@@ -31,8 +34,6 @@ public class TwilioAppSettings {
   private static final Logger LOG = Logger.getLogger(TwilioAppSettings.class.getName());
 
   private final TwilioRestClient twilioRestClient;
-
-  private final TwilioTaskRouterClient twilioTaskRouterClient;
 
   private String twilioAccountSid;
 
@@ -61,27 +62,24 @@ public class TwilioAppSettings {
       phoneNumber = new PhoneNumber(phoneNumberStr);
     } catch (IOException e) {
       LOG.info("Welcome to TaskRouter tutorial for servlets. First time running....");
-      twilioAccountSid = Optional.ofNullable(System.getenv("TWILIO_ACCOUNT_SID")).orElseThrow(
-        () -> new TaskRouterException("TWILIO_ACCOUNT_SID is not set in the environment"));
-      twilioAuthToken = Optional.ofNullable(System.getenv("TWILIO_AUTH_TOKEN")).orElseThrow(
-        () -> new TaskRouterException("TWILIO_AUTH_TOKEN is not set in the environment"));
       String phoneNumberStr = Optional.ofNullable(System.getenv("TWILIO_NUMBER")).orElseThrow(
         () -> new TaskRouterException("TWILIO_NUMBER is not set in the environment"));
       phoneNumber = new PhoneNumber(phoneNumberStr);
       email = Optional.ofNullable(System.getenv("MISSED_CALLS_EMAIL_ADDRESS")).orElseThrow(
         () -> new TaskRouterException("MISSED_CALLS_EMAIL_ADDRESS is not set in the environment"));
     }
+    twilioAccountSid = Optional.ofNullable(System.getenv("TWILIO_ACCOUNT_SID")).orElseThrow(
+      () -> new TaskRouterException("TWILIO_ACCOUNT_SID is not set in the environment"));
+    twilioAuthToken = Optional.ofNullable(System.getenv("TWILIO_AUTH_TOKEN")).orElseThrow(
+      () -> new TaskRouterException("TWILIO_AUTH_TOKEN is not set in the environment"));
 
-    twilioRestClient = new TwilioRestClient(twilioAccountSid, twilioAuthToken);
-    twilioTaskRouterClient = new TwilioTaskRouterClient(twilioAccountSid, twilioAuthToken);
+
+    Twilio.init(twilioAccountSid, twilioAuthToken);
+    twilioRestClient = new TwilioRestClient.Builder(twilioAccountSid, twilioAuthToken).build();
   }
 
   public TwilioRestClient getTwilioRestClient() {
     return twilioRestClient;
-  }
-
-  public TwilioTaskRouterClient getTwilioTaskRouterClient() {
-    return twilioTaskRouterClient;
   }
 
   public String getTwilioAccountSid() {
@@ -112,15 +110,18 @@ public class TwilioAppSettings {
     return phoneNumber;
   }
 
-  public void redirectToVoiceMail(String callSID, String msgToUser) throws TwilioRestException {
+  public void redirectToVoiceMail(String callSID, String msgToUser) {
     try {
       String routeUrl = String.format("http://twimlets.com/voicemail?Email=%s&Message=%s",
         getEmail(), URLEncoder.encode(msgToUser, "UTF-8"));
-      Call call = twilioRestClient.getAccount().getCall(callSID);
+      Call call = new CallFetcher(callSID).execute(twilioRestClient);
       List<NameValuePair> params = new ArrayList<>();
       params.add(new BasicNameValuePair("Url", routeUrl));
       params.add(new BasicNameValuePair("Method", "POST"));
-      call.update(params);
+      new CallUpdater(call.getSid())
+        .setUrl(routeUrl)
+        .setMethod(HttpMethod.POST)
+        .execute(twilioRestClient);
     } catch (UnsupportedEncodingException e) {
       throw new TaskRouterException("Error converting message to the user to a valid url "
         + e.getMessage());
