@@ -49,22 +49,22 @@ public class WorkspaceFacade {
     String eventCallbackUrl = params.get("EventCallbackUrl");
 
     ResourceSet<Workspace> execute = new WorkspaceReader()
-      .byFriendlyName(workspaceName)
-      .execute(client);
+      .setFriendlyName(workspaceName)
+      .read(client);
     StreamSupport.stream(execute.spliterator(), false)
       .findFirst()
-      .ifPresent(workspace -> new WorkspaceDeleter(workspace.getSid()).execute(client));
+      .ifPresent(workspace -> new WorkspaceDeleter(workspace.getSid()).delete(client));
 
     Workspace workspace = new WorkspaceCreator(workspaceName)
       .setEventCallbackUrl(eventCallbackUrl)
-      .execute(client);
+      .create(client);
 
     return new WorkspaceFacade(client, workspace);
   }
 
   public static Optional<WorkspaceFacade> findBySid(String workspaceSid,
                                                     TwilioRestClient client) {
-    Workspace workspace = new WorkspaceFetcher(workspaceSid).execute(client);
+    Workspace workspace = new WorkspaceFetcher(workspaceSid).fetch(client);
     return Optional.of(new WorkspaceFacade(client, workspace));
   }
 
@@ -80,7 +80,7 @@ public class WorkspaceFacade {
     return new WorkerCreator(workspace.getSid(), workerParams.get("FriendlyName"))
       .setActivitySid(workerParams.get("ActivitySid"))
       .setAttributes(workerParams.get("Attributes"))
-      .execute(client);
+      .create(client);
   }
 
   public void addTaskQueue(Map<String, String> taskQueueParams) {
@@ -88,7 +88,7 @@ public class WorkspaceFacade {
       taskQueueParams.get("FriendlyName"),
       taskQueueParams.get("ReservationActivitySid"),
       taskQueueParams.get("AssignmentActivitySid"))
-      .execute(client);
+      .create(client);
   }
 
   public Workflow addWorkflow(Map<String, String> workflowParams) {
@@ -98,27 +98,27 @@ public class WorkspaceFacade {
       .setAssignmentCallbackUrl(workflowParams.get("AssignmentCallbackUrl"))
       .setFallbackAssignmentCallbackUrl(workflowParams.get("FallbackAssignmentCallbackUrl"))
       .setTaskReservationTimeout(Integer.valueOf(workflowParams.get("TaskReservationTimeout")))
-      .execute(client);
+      .create(client);
   }
 
   public Optional<Activity> findActivityByName(String activityName) {
     return StreamSupport.stream(new ActivityReader(this.workspace.getSid())
-      .byFriendlyName(activityName)
-      .execute(client).spliterator(), false
+      .setFriendlyName(activityName)
+      .read(client).spliterator(), false
     ).findFirst();
   }
 
   public Optional<TaskQueue> findTaskQueueByName(String queueName) {
     return StreamSupport.stream(new TaskQueueReader(this.workspace.getSid())
-      .byFriendlyName(queueName)
-      .execute(client).spliterator(), false
+      .setFriendlyName(queueName)
+      .read(client).spliterator(), false
     ).findFirst();
   }
 
   public Optional<Workflow> findWorkflowByName(String workflowName) {
     return StreamSupport.stream(new WorkflowReader(this.workspace.getSid())
-      .byFriendlyName(workflowName)
-      .execute(client).spliterator(), false
+      .setFriendlyName(workflowName)
+      .read(client).spliterator(), false
     ).findFirst();
   }
 
@@ -130,7 +130,7 @@ public class WorkspaceFacade {
     if (phoneToWorker == null) {
       phoneToWorker = new HashMap<>();
       StreamSupport.stream(
-        new WorkerReader(this.workspace.getSid()).execute(client).spliterator(), false
+        new WorkerReader(this.workspace.getSid()).read(client).spliterator(), false
       ).forEach(worker -> {
         try {
           HashMap<String, Object> attributes = new ObjectMapper()
@@ -161,6 +161,6 @@ public class WorkspaceFacade {
 
     new WorkerUpdater(workspace.getSid(), worker.getSid())
       .setActivitySid(activity.getSid())
-      .execute(client);
+      .update(client);
   }
 }
