@@ -114,14 +114,14 @@ public class TwilioAppSettings {
     try {
       String routeUrl = String.format("http://twimlets.com/voicemail?Email=%s&Message=%s",
         getEmail(), URLEncoder.encode(msgToUser, "UTF-8"));
-      Call call = new CallFetcher(callSID).execute(twilioRestClient);
+      Call call = new CallFetcher(callSID).fetch(twilioRestClient);
       List<NameValuePair> params = new ArrayList<>();
       params.add(new BasicNameValuePair("Url", routeUrl));
       params.add(new BasicNameValuePair("Method", "POST"));
       new CallUpdater(call.getSid())
         .setUrl(routeUrl)
         .setMethod(HttpMethod.POST)
-        .execute(twilioRestClient);
+        .update(twilioRestClient);
     } catch (UnsupportedEncodingException e) {
       throw new TaskRouterException("Error converting message to the user to a valid url "
         + e.getMessage());
