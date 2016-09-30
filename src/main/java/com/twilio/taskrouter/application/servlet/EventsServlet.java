@@ -93,7 +93,7 @@ public class EventsServlet extends HttpServlet {
       new PhoneNumber(workerPhone),
       new PhoneNumber(twilioSettings.getPhoneNumber().toString()),
       OFFLINE_MSG
-    ).execute();
+    ).create();
 
   }
 
