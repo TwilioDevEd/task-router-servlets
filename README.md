@@ -17,6 +17,7 @@ uses a SQLite database to log phone calls which were not assisted.
 
 1. [Java 8](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
    installed in your operative system.
+
 1. A Twilio account with a verified [phone number][twilio-phone-number].
    (Get a [free account](//www.twilio.com/try-twilio?utm_campaign=tutorials&utm_medium=readme)
    here.). If you are using a Twilio Trial Account, you can learn all about it [here]
@@ -110,12 +111,16 @@ uses a SQLite database to log phone calls which were not assisted.
   For Voice, press any other key.
 
 1. Reply with 1.
+
 1. The specified phone for agent 1 will be called:  __agent1-phone__.
+
 1. If __agent1-phone__ is not answered in 30 seconds then __agent2-phone__ will
   be called.
+
 1. In case the second agent doesn't answer the call, it will be logged as a
   missed call. You can see all missed calls in the main page of the running
   server at [http://{sub-domain}.ngrok.io](//localhost:8000).
+  
 1. Repeat the process but enter any key different to __1__ to choose Voice.
 
  [twilio-phone-number]: https://www.twilio.com/console/phone-numbers/incoming
