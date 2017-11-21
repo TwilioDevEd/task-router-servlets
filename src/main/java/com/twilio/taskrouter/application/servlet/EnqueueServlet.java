@@ -1,10 +1,10 @@
 package com.twilio.taskrouter.application.servlet;
 
 import com.twilio.taskrouter.domain.common.TwilioAppSettings;
-import com.twilio.twiml.EnqueueTask;
-import com.twilio.twiml.Task;
 import com.twilio.twiml.TwiMLException;
 import com.twilio.twiml.VoiceResponse;
+import com.twilio.twiml.voice.Enqueue;
+import com.twilio.twiml.voice.Task;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -39,13 +39,13 @@ public class EnqueueServlet extends HttpServlet {
     throws ServletException, IOException {
 
     String selectedProduct = getSelectedProduct(req);
-    Task task = new Task.Builder()
-      .data(format("{\"selected_product\": \"%s\"}", selectedProduct))
+    Task task = new Task
+      .Builder(format("{\"selected_product\": \"%s\"}", selectedProduct))
       .build();
 
-    EnqueueTask enqueueTask = new EnqueueTask.Builder(task).workflowSid(workflowSid).build();
+    Enqueue enqueue = new Enqueue.Builder().task(task).workflowSid(workflowSid).build();
 
-    VoiceResponse voiceResponse = new VoiceResponse.Builder().enqueue(enqueueTask).build();
+    VoiceResponse voiceResponse = new VoiceResponse.Builder().enqueue(enqueue).build();
     resp.setContentType("application/xml");
     try {
       resp.getWriter().print(voiceResponse.toXml());

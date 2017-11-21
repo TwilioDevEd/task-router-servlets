@@ -2,9 +2,9 @@ package com.twilio.taskrouter.application.servlet;
 
 import com.google.inject.Singleton;
 import com.twilio.taskrouter.domain.model.WorkspaceFacade;
-import com.twilio.twiml.Sms;
 import com.twilio.twiml.TwiMLException;
 import com.twilio.twiml.VoiceResponse;
+import com.twilio.twiml.voice.Sms;
 
 import javax.inject.Inject;
 import javax.servlet.ServletException;
