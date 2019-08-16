@@ -25,7 +25,7 @@ dependencies {
   compile 'org.slf4j:slf4j-api:1.7.21'
   compile 'com.twilio.sdk:twilio:7.0.0-rc-29'
   compile 'org.json:json:20160810'
-  compile 'org.apache.commons:commons-lang3:3.0'
+  compile 'org.apache.commons:commons-lang3:3.9'
 
 
   compile 'org.eclipse.persistence:javax.persistence:2.1.1'
