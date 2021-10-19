@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -54,11 +55,12 @@ public class MessageServletTest {
 
     Constructor<Activity> idleConstructor = Activity.class.getDeclaredConstructor(
       String.class, Boolean.class, String.class, String.class,
-      String.class, String.class, String.class
+      String.class, String.class, String.class, URI.class
     );
     idleConstructor.setAccessible(true);
     Activity idleActivity = idleConstructor.newInstance(
-      "WACIDLEXXXX", true, "2010-01-01", "2010-01-01", "idle", "WACIDLEXXXX", "WACIDLEXXXX"
+      "WACIDLEXXXX", true, "2010-01-01", "2010-01-01", "idle", "WACIDLEXXXX", "WACIDLEXXXX",
+      new URI("http://fake.com")
     );
 
     when(workspaceFacadeMock.findActivityByName("Idle"))
@@ -66,11 +68,12 @@ public class MessageServletTest {
 
     Constructor<Activity> offlineActivityConstructor = Activity.class.getDeclaredConstructor(
       String.class, Boolean.class, String.class, String.class,
-      String.class, String.class, String.class
+      String.class, String.class, String.class, URI.class
     );
     offlineActivityConstructor.setAccessible(true);
     Activity offlineActivity = offlineActivityConstructor.newInstance(
-      "WACOFFLINEXXXX", true, "2010-01-01", "2010-01-01", "off", "WACOFFLINEXXXX", "WACOFFLINEXXXX"
+      "WACOFFLINEXXXX", true, "2010-01-01", "2010-01-01", "off", "WACOFFLINEXXXX", "WACOFFLINEXXXX",
+      new URI("http://fake.com")
     );
 
     when(workspaceFacadeMock.findActivityByName("Offline"))
@@ -98,7 +101,8 @@ public class MessageServletTest {
 
     verify(responseMock, times(1)).setContentType("application/xml");
     verify(responseMock.getWriter(), times(1))
-      .print("<Response><Sms>You are not a valid worker</Sms></Response>");
+      .print("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+        + "<Response><Sms>You are not a valid worker</Sms></Response>");
   }
 
 }

@@ -1,11 +1,11 @@
 package com.twilio.taskrouter.application.servlet;
 
 
-import com.twilio.twiml.Gather;
-import com.twilio.twiml.Method;
-import com.twilio.twiml.Say;
+import com.twilio.http.HttpMethod;
 import com.twilio.twiml.TwiMLException;
 import com.twilio.twiml.VoiceResponse;
+import com.twilio.twiml.voice.Gather;
+import com.twilio.twiml.voice.Say;
 
 import javax.inject.Singleton;
 import javax.servlet.ServletException;
@@ -33,7 +33,7 @@ public class IncomingCallServlet extends HttpServlet {
           .action("/call/enqueue")
           .numDigits(1)
           .timeout(10)
-          .method(Method.POST)
+          .method(HttpMethod.POST)
           .say(new Say
             .Builder("For Programmable SMS, press one. For Voice, press any other key.")
             .build()
