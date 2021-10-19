@@ -36,7 +36,7 @@ dependencies {
   compile 'com.google.inject.extensions:guice-persist:4.0'
   compile 'com.google.inject.extensions:guice-servlet:4.0'
 
-  compile 'com.googlecode.libphonenumber:libphonenumber:7.4.3'
+  compile 'com.googlecode.libphonenumber:libphonenumber:8.12.35'
 
   testCompile 'junit:junit:4.12'
   testCompile 'org.mockito:mockito-all:1.9.5'
