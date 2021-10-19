@@ -4,7 +4,7 @@
 
 # TaskRouter on Servlets
 
-[![Build Status](https://travis-ci.org/TwilioDevEd/task-router-servlets.svg?branch=master)](https://travis-ci.org/TwilioDevEd/task-router-servlets)
+[![Java Servlet CI](https://github.com/TwilioDevEd/task-router-servlets/actions/workflows/gradle.yml/badge.svg)](https://github.com/TwilioDevEd/task-router-servlets/actions/workflows/gradle.yml)
 
 Use Twilio to provide your user with multiple options through phone calls, so
 they can be assisted by an agent specialized in the chosen topic. This is
