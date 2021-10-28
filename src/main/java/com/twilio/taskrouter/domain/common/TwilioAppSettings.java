@@ -8,6 +8,7 @@ import com.twilio.rest.api.v2010.account.CallFetcher;
 import com.twilio.rest.api.v2010.account.CallUpdater;
 import com.twilio.taskrouter.domain.error.TaskRouterException;
 import com.twilio.taskrouter.domain.model.PhoneNumber;
+import io.github.cdimascio.dotenv.Dotenv;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
@@ -49,6 +50,8 @@ public class TwilioAppSettings {
 
   private PhoneNumber phoneNumber;
 
+  private static Dotenv dotenv = Dotenv.load();
+
   public TwilioAppSettings() {
     try {
       Properties properties = Utils.loadProperties(new File(WORKSPACE_PROPERTIES_FILE_PATH));
@@ -62,15 +65,15 @@ public class TwilioAppSettings {
       phoneNumber = new PhoneNumber(phoneNumberStr);
     } catch (IOException e) {
       LOG.info("Welcome to TaskRouter tutorial for servlets. First time running....");
-      String phoneNumberStr = Optional.ofNullable(System.getenv("TWILIO_NUMBER")).orElseThrow(
+      String phoneNumberStr = Optional.ofNullable(dotenv.get("TWILIO_NUMBER")).orElseThrow(
         () -> new TaskRouterException("TWILIO_NUMBER is not set in the environment"));
       phoneNumber = new PhoneNumber(phoneNumberStr);
-      email = Optional.ofNullable(System.getenv("MISSED_CALLS_EMAIL_ADDRESS")).orElseThrow(
+      email = Optional.ofNullable(dotenv.get("MISSED_CALLS_EMAIL_ADDRESS")).orElseThrow(
         () -> new TaskRouterException("MISSED_CALLS_EMAIL_ADDRESS is not set in the environment"));
     }
-    twilioAccountSid = Optional.ofNullable(System.getenv("TWILIO_ACCOUNT_SID")).orElseThrow(
+    twilioAccountSid = Optional.ofNullable(dotenv.get("TWILIO_ACCOUNT_SID")).orElseThrow(
       () -> new TaskRouterException("TWILIO_ACCOUNT_SID is not set in the environment"));
-    twilioAuthToken = Optional.ofNullable(System.getenv("TWILIO_AUTH_TOKEN")).orElseThrow(
+    twilioAuthToken = Optional.ofNullable(dotenv.get("TWILIO_AUTH_TOKEN")).orElseThrow(
       () -> new TaskRouterException("TWILIO_AUTH_TOKEN is not set in the environment"));
 
 

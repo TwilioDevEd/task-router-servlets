@@ -27,42 +27,36 @@ uses a SQLite database to log phone calls which were not assisted.
 1. First clone this repository and `cd` into it.
 
   ```
-  $ git clone git@github.com:TwilioDevEd/task-router-servlets.git
-  $ cd task-router-servlets
+  git clone git@github.com:TwilioDevEd/task-router-servlets.git
+  cd task-router-servlets
   ```
 
 1. Copy the sample configuration file and edit it to match your configuration.
 
   ```bash
-  $ cp .env.example .env
+  cp .env.example .env
   ```
-
   You can find your `TWILIO_ACCOUNT_SID` and `TWILIO_AUTH_TOKEN` in your
   Twilio Account Settings. You will also need a TWILIO_NUMBER that you
   may find [here][twilio-phone-number].
 
-  Run `source .env` to export the environment variables.
-
-  If you are using a different operating system, make sure that all the
-  variables from the `.env` file are loaded into your environment.
-
 1. Make sure the tests succeed.
 
   ```bash
-  $ ./gradlew check
+  ./gradlew check
   ```
 
 1. Configure the phone number of the agents which are going to answer the calls.
 
   ```bash
-    $ ./gradlew -q createWorkspace -Pconfig="https://<sub-domain>.ngrok.io <agent1-phone> <agent2-phone>"
+  ./gradlew -q createWorkspace -Pconfig="https://<sub-domain>.ngrok.io <agent1-phone> <agent2-phone>"
   ```
 
   You will receive a message telling you to export 2 environment variables.
 
   ```bash
-  $ export WORKFLOW_SID=<hashvalue-workflow-sid>
-  $ export POST_WORK_ACTIVITY_SID=<hashvalue-post-work-activity-sid>
+  export WORKFLOW_SID=<hashvalue-workflow-sid>
+  export POST_WORK_ACTIVITY_SID=<hashvalue-post-work-activity-sid>
   ```
 
   When the user calls, he will choose one option which will redirect him to
@@ -73,7 +67,7 @@ uses a SQLite database to log phone calls which were not assisted.
 1. Start the server.
 
   ```bash
-  $ ./gradlew appRun
+  ./gradlew appRun
   ```
 
 1. Expose your local web server to the internet using ngrok.
@@ -83,7 +77,7 @@ uses a SQLite database to log phone calls which were not assisted.
   work as expected if you run it using `localhost`.
 
   ```bash
-  $ ngrok http 8000
+  ngrok http 8000
   ```
 
   Once ngrok is running open up your browser and go to your ngrok URL. It will look something like this:
