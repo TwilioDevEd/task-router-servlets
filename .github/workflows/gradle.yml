@@ -32,6 +32,8 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
       - name: Build with Gradle
-        run: ./gradlew build
+        run: |
+          cp .env.example .env
+          ./gradlew build
       - name: Run tests
-        run: ./gradlew test
+        run: ./gradlew check
