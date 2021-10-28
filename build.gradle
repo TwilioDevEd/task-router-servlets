@@ -39,7 +39,7 @@ dependencies {
   compile 'com.googlecode.libphonenumber:libphonenumber:7.4.3'
   compile 'io.github.cdimascio:dotenv-java:2.2.0'
 
-  testCompile 'junit:junit:4.12'
+  testCompile 'junit:junit:4.13.2'
   testCompile 'org.mockito:mockito-all:1.9.5'
   testCompile 'org.hamcrest:hamcrest-library:1.3'
 }
