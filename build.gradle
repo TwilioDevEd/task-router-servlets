@@ -34,7 +34,7 @@ dependencies {
   compile 'org.hibernate:hibernate-validator:5.2.4.Final'
 
   compile 'com.google.inject.extensions:guice-persist:4.0'
-  compile 'com.google.inject.extensions:guice-servlet:4.0'
+  compile 'com.google.inject.extensions:guice-servlet:5.0.1'
 
   compile 'com.googlecode.libphonenumber:libphonenumber:7.4.3'
   compile 'io.github.cdimascio:dotenv-java:2.2.0'
