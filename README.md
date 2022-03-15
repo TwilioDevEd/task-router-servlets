@@ -11,7 +11,7 @@ they can be assisted by an agent specialized in the chosen topic. This is
 basically a call center created with the TaskRouter API of Twilio. This example
 uses a SQLite database to log phone calls which were not assisted.
 
-[Read the full tutorial here](//www.twilio.com/docs/tutorials/walkthrough/task-router/java/servlets)
+[Read the full tutorial here](https://www.twilio.com/docs/taskrouter/tutorials/dynamic-call-center-java-servlets)
 
 ### Prerequisites
 
@@ -19,8 +19,7 @@ uses a SQLite database to log phone calls which were not assisted.
    installed in your operative system.
 1. A Twilio account with a verified [phone number][twilio-phone-number].
    (Get a [free account](//www.twilio.com/try-twilio?utm_campaign=tutorials&utm_medium=readme)
-   here.). If you are using a Twilio Trial Account, you can learn all about it [here]
-   (https://www.twilio.com/help/faq/twilio-basics/how-does-twilios-free-trial-work).
+   here.). If you are using a Twilio Trial Account, you can learn all about it [here](https://www.twilio.com/docs/usage/tutorials/how-to-use-your-free-trial-account).
 
 ### Local Development
 
@@ -94,7 +93,7 @@ uses a SQLite database to log phone calls which were not assisted.
    http://<sub-domain>.ngrok.io/call/incoming
    ```
 
-   ![Configure SMS](http://howtodocs.s3.amazonaws.com/twilio-number-config-all-med.gif)
+   [Learn how to configure a Twilio phone number for Programmable SMS](https://support.twilio.com/hc/en-us/articles/223136047-Configure-a-Twilio-Phone-Number-to-Receive-and-Respond-to-Messages)
 
 ### How To Demo?
 
